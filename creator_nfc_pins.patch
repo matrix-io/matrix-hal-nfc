@@ -1,0 +1,19 @@
+--- phPlatform_Port_Pi_RC523.h	2019-06-04 17:12:34.000000000 +0100
++++ matrix_creator_nfc_phPlatform_Port_Pi_RC523.h 2019-06-04 17:12:43.000000000 +0100
+@@ -14,12 +14,12 @@
+ #if defined (NXPBUILD__PHHAL_HW_RC523) && \
+     defined (NXPBUILD__PH_RASPBERRY_PI)
+ 
+-#define PIN_RESET                   7   /**< "/sys/class/gpio/gpio7/" */
+-#define PIN_IRQ                     23  /**< "/sys/class/gpio/gpio23/" */
++#define PIN_RESET                   5   /**< "/sys/class/gpio/gpio5/" */
++#define PIN_IRQ                     25  /**< "/sys/class/gpio/gpio25/" */
+ /* #define PIN_BUSY                 Busy Pin not required in Rc523 */
+ 
+-#define SPI_BUS                     0   /**< "/dev/spidev0.0" */
+-#define SPI_CS                      0   /**< "/dev/spidev0.0" */
++#define SPI_BUS                     0   /**< "/dev/spidev0.1" */
++#define SPI_CS                      1   /**< "/dev/spidev0.1" */
+ #define SPI_FREQ                    5000000 /**< 5 MHz. */
+ 
+ #define I2C_NUM                     1   /**< "/dev/i2c-1" */
