@@ -35,7 +35,7 @@ git clone https://github.com/matrix-io/matrix-hal-nfc.git
 
 Move the SW297940.zip into the cloned matrix-hal-nfc folder.
 
-Once complete, you can apply the MATRIX Creator specific config patch and install the library into /usr/include/matrix_nfc/nxp_nfc with the following commands:
+Once complete, you can apply the MATRIX Creator specific config patch and install the library into /usr/local/include/matrix_nfc/nxp_nfc with the following commands:
 
 ```
 unzip SW297940.zip -d nxp_nfc && patch < creator_nfc_pins.patch ./nxp_nfc/NxpNfcRdLib/intfs/phPlatform_Port_Pi_RC523.h && sudo mkdir -p /usr/local/include/matrix_nfc/nxp_nfc/ && sudo cp -r nxp_nfc/ /usr/local/include/matrix_nfc/ && sudo chmod 755 -R /usr/local/include/matrix_nfc/ && sudo rm -r nxp_nfc
@@ -43,7 +43,7 @@ unzip SW297940.zip -d nxp_nfc && patch < creator_nfc_pins.patch ./nxp_nfc/NxpNfc
 
 ## Installation
 
-Please ensure that you have first followed the above steps and that the NXP Library is extracted to /usr/include/matrix_nfc/nxp_nfc.
+Please ensure that you have first followed the above steps and that the NXP Library is extracted to /usr/local/include/matrix_nfc/nxp_nfc.
 
 In the root directory of this repository there is a rebuild.sh file. This will run cmake and make, and also install the needed headers in `/usr/local/include/matrix_nfc/` and the libmatrix_hal_nfc.so library file in `/usr/local/lib/`.
 
