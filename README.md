@@ -4,6 +4,11 @@ matrix-hal-nfc is a simple, easy to use wrapper for using NXP's NFC Reader Libra
 
 Currently the wrapper only supports detecting and reading NFC tags.
 
+## Roadmap
+- [x] Reading
+- [ ] Writing
+- [ ] Improve installation & usage
+
 ## License
 
 All files in this repository (not including the proprietary NXP NFC Reader Library) are distributed under the GPL3 license.
