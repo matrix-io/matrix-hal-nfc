@@ -5,12 +5,8 @@
 #include "matrix_hal/everloop_image.h"
 #include "matrix_hal/matrixio_bus.h"
 
-#include "../src/nfc_data.h"
-
-extern "C" {
-// This references a C library with C++ addons, use C linkage
-#include "../src/nfc_sensor.h"
-}
+#include "matrix_nfc/nfc_data.h"
+#include "matrix_nfc/nfc_sensor.h"
 
 namespace hal = matrix_hal;
 

@@ -1,6 +1,6 @@
 // NOTE: This file integrates with the NXP NFC Reader Library v4.040.05
 
-#include "./nfc_sensor.h"
+#include "nfc_sensor.h"
 
 // using std::cout;
 // using std::endl;
@@ -342,8 +342,6 @@ void NFCSensor::Read(NFCData *nfcData) {
 
       // DEBUG_PRINTF("\n\t\tUUID :");
       // phApp_Print_Buff(pBuffUUID, i);
-
-      newCard = 1;
 
       // phApp_PrintTagInfo(pDataParams, numberOfTags, tagTechType);
       ExportTagInfo(pDataParams, tagTechType, nfcData);
