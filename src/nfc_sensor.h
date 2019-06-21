@@ -5,11 +5,9 @@
 
 #include <iostream>
 
-#include "nfc_abstraction.h"
 #include "nfc_data.h"
 
-// Set to false to disable std::cerr from outputting error and debug messages
-bool cerrMessage = true;
+#include "nfc_abstraction.h"  // This MUST be included last!
 
 void ExportTagInfo(phacDiscLoop_Sw_DataParams_t *pDataParams,
                    uint16_t tagTechnology, matrix_hal::NFCData *nfcData);

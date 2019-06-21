@@ -15,7 +15,6 @@ void ExportTagInfo(phacDiscLoop_Sw_DataParams_t *pDataParams,
   if (PHAC_DISCLOOP_CHECK_ANDMASK(tagTechnology,
                                   PHAC_DISCLOOP_POS_BIT_MASK_A)) {
     nfcData->technology = "Type A";
-
     uint8_t UIDsize = pDataParams->sTypeATargetInfo.aTypeA_I3P3[0].bUidSize;
     uint8_t *UIDptr = pDataParams->sTypeATargetInfo.aTypeA_I3P3[0].aUid;
     nfcData->UID = std::vector<int>(UIDptr, UIDptr + UIDsize);
@@ -118,10 +117,7 @@ NFCSensor::NFCSensor() {
   }
 }
 
-NFCSensor::~NFCSensor() {
-  (void)phNfcLib_DeInit();
-  cerr.clear();
-}
+NFCSensor::~NFCSensor() { (void)phNfcLib_DeInit(); }
 
 void NFCSensor::Read(NFCData *nfcData) {
   // Read function takes between 30ms and 40ms to run.
