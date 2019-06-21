@@ -2,7 +2,6 @@
 #include <cmath>
 #include <iostream>
 #include <thread>
-#include <unistd.h>
 
 #include "matrix_hal/everloop.h"
 #include "matrix_hal/everloop_image.h"
@@ -15,26 +14,12 @@ using namespace std;
 
 namespace hal = matrix_hal;
 
-int wrap(hal::NFCSensor *nfcSensor, hal::NFCData *nfcData,
-         int *NFC_poll_count) {
-  auto start = chrono::steady_clock::now();
-  if (*NFC_poll_count % 3 == 0) {
-    nfcSensor->Read(nfcData);
-  }
-  *NFC_poll_count++;
-  auto end = chrono::steady_clock::now();
-  auto diff = end - start;
-  cout << chrono::duration<double, milli>(diff).count() << " ms" << endl;
-  // std::this_thread::sleep_for(std::chrono::microseconds(5000));
-}
-
 int main() {
   std::string switchUID = "";
 
   hal::MatrixIOBus bus;
 
-  if (!bus.Init())
-    return false;
+  if (!bus.Init()) return false;
 
   hal::EverloopImage everloop_image(bus.MatrixLeds());
 
@@ -48,8 +33,7 @@ int main() {
   // Get switch UID
   std::cout << "Scan ON/OFF Tag" << std::endl;
   while (true) {
-    if (nfcData.recentlyUpdated)
-      break;
+    if (nfcData.recentlyUpdated) break;
     nfcSensor.Read(&nfcData);
   }
   switchUID = nfcData.strUID();
@@ -59,10 +43,8 @@ int main() {
   float counter = 0;
   const float freq = 0.375;
 
-  int *NFC_poll_count = new int(0);
-
   do {
-    std::thread t1(wrap, &nfcSensor, &nfcData, NFC_poll_count);
+    nfcSensor.Read(&nfcData);
 
     if (nfcData.recentlyUpdated) {
       std::string currUID = nfcData.strUID();
@@ -80,10 +62,8 @@ int main() {
       }
     }
 
-    t1.join();
     everloop.Write(&everloop_image);
-
-    std::this_thread::sleep_for(std::chrono::microseconds(30000));
+    std::this_thread::sleep_for(std::chrono::microseconds(10000));
   } while (true);
 
   return 0;

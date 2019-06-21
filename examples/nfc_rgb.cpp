@@ -1,5 +1,6 @@
+#include <chrono>
 #include <iostream>
-#include <unistd.h>
+#include <thread>
 
 #include "matrix_hal/everloop.h"
 #include "matrix_hal/everloop_image.h"
@@ -17,8 +18,7 @@ int main() {
 
   hal::MatrixIOBus bus;
 
-  if (!bus.Init())
-    return false;
+  if (!bus.Init()) return false;
 
   hal::EverloopImage image1d(bus.MatrixLeds());
 
@@ -32,8 +32,7 @@ int main() {
   // Get red UID
   std::cout << "Scan Red Tag" << std::endl;
   while (true) {
-    if (nfcData.recentlyUpdated)
-      break;
+    if (nfcData.recentlyUpdated) break;
     nfcSensor.Read(&nfcData);
   }
   redUID = nfcData.strUID();
@@ -43,8 +42,7 @@ int main() {
   // Get green UID
   std::cout << "Scan Green Tag" << std::endl;
   while (true) {
-    if (nfcData.recentlyUpdated && nfcData.strUID() != redUID)
-      break;
+    if (nfcData.recentlyUpdated && nfcData.strUID() != redUID) break;
     nfcSensor.Read(&nfcData);
   }
   greenUID = nfcData.strUID();
@@ -62,6 +60,8 @@ int main() {
   blueUID = nfcData.strUID();
 
   nfcData.recentlyUpdated = false;
+
+  std::cout << "\nScan specified tags to activate Everloop" << std::endl;
 
   do {
     nfcSensor.Read(&nfcData);
@@ -95,13 +95,13 @@ int main() {
         led.red = 0;
         led.green = 0;
         led.blue = 0;
-        led.white = 10;
+        led.white = 0;
       }
     }
 
     everloop.Write(&image1d);
 
-    usleep(10000);
+    std::this_thread::sleep_for(std::chrono::microseconds(10000));
   } while (true);
 
   return 0;

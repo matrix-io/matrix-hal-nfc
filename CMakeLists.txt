@@ -28,10 +28,12 @@ add_definitions(-std=c++11 -fpermissive)
 include_directories(
     ./src/
     # NXP Library Init
-    /usr/local/include/matrix_nfc/nxp_nfc/NfcrdlibEx2_AdvancedDiscoveryLoop/intfs
+    /usr/local/include/matrix_nfc/nxp_nfc/Nfcrdlib_SimplifiedAPI_ISO/intfs
+    /usr/local/include/matrix_nfc/nxp_nfc/NfcrdlibEx3_NFCForum/intfs/
 )
 
-set(nxp_init "/usr/local/include/matrix_nfc/nxp_nfc/NfcrdlibEx2_AdvancedDiscoveryLoop/src/phApp_Init.c")
+set(nxp_init "/usr/local/include/matrix_nfc/nxp_nfc/NfcrdlibEx3_NFCForum/src/phApp_Init.c")
+set(nxp_cards "/usr/local/include/matrix_nfc/nxp_nfc/NfcrdlibEx3_NFCForum/src/cards.c")
 
 set(matrix_hal_nfc_headers
 ./src/nfc_abstraction.h
@@ -51,7 +53,7 @@ find_library(CRYPT_LIB NAMES crypt)
 find_library(GFLAGS_LIB NAMES gflags)
 message(STATUS "gflags found =>" "${GFLAGS_LIB}")
 
-add_library(matrix_hal_nfc SHARED ${nxp_init} ${matrix_hal_nfc_src})
+add_library(matrix_hal_nfc SHARED ${nxp_init} ${nxp_cards} ${matrix_hal_nfc_src})
 set_property(TARGET matrix_hal_nfc PROPERTY CXX_STANDARD 11)
 
 target_link_libraries(
@@ -86,6 +88,10 @@ target_link_libraries(
     NxpRdLib_palI18092mT
     NxpRdLib_ceT4T
     NxpRdLib_palEpcUid
+    NxpRdLib_phTools
+    NxpRdLib_palI18092mT
+    NxpRdLib_npSnep
+    NxpRdLib_phNfcLib
     ${CMAKE_THREAD_LIBS_INIT}
 )
 
