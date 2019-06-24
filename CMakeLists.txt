@@ -37,7 +37,7 @@ set(nxp_init "/usr/local/include/matrix_nfc/nxp_nfc/NfcrdlibEx3_NFCForum/src/phA
 set(nxp_cards "/usr/local/include/matrix_nfc/nxp_nfc/NfcrdlibEx3_NFCForum/src/cards.c")
 
 set(matrix_hal_nfc_headers
-./src/nfc_data.h
+./src/nfc_info.h
 ./src/nfc_sensor.h
 )
 

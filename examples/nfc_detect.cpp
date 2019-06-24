@@ -26,15 +26,15 @@ int main() {
   everloop.Setup(&bus);
 
   hal::NFCSensor nfcSensor;
-  hal::NFCData nfcData;
+  hal::NFCInfo nfcInfo;
 
   cout << "Scan a Tag, Any Tag!" << endl;
 
   do {
-    nfcSensor.Read(&nfcData);
+    nfcSensor.Read(&nfcInfo);
 
-    if (nfcData.recentlyUpdated) {
-      cout << nfcData.str() << endl << endl;
+    if (nfcInfo.recentlyUpdated) {
+      cout << nfcInfo.str() << endl << endl;
       for (hal::LedValue &led : image1d.leds) {
         led.red = 0;
         led.green = 20;

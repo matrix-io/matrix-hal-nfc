@@ -9,10 +9,9 @@
 #include <vector>
 
 namespace matrix_hal {
-class NFCData {
+class NFCInfo {
  public:
   bool recentlyUpdated = false;
-  // std::unique_ptr<std::vector<uint8_t>> NDEF;
   std::unique_ptr<std::vector<uint8_t>> UID;
   std::unique_ptr<std::vector<uint8_t>> ATQ;
   int SAK = -1;
@@ -22,9 +21,8 @@ class NFCData {
 
   // HELPER FUNCTIONS
   void reset() {
-    // Reset data before populaing with info from new object
+    // Reset parameters before populaing with info from new object
     recentlyUpdated = true;
-    // NDEF.reset();
     UID.reset();
     ATQ.reset();
     SAK = -1;
@@ -32,29 +30,6 @@ class NFCData {
     technology = "null";
     type = "null";
   }
-
-  // std::string strNDEFChar() {
-  //   if (NDEF == nullptr) return "null";
-  //   std::stringstream ret;
-  //   ret << "0x";
-  //   for (int i : *NDEF) {
-  //     ret << +i << " ";
-  //   }
-  //   ret << std::flush;
-  //   return ret.str();
-  // }
-
-  // std::string strNDEF() {
-  //   if (NDEF == nullptr) return "null";
-  //   std::stringstream ret;
-  //   ret << "0x";
-  //   for (int i : *NDEF) {
-  //     ret << std::setfill('0') << std::setw(2) << std::hex << std::uppercase
-  //         << +i;
-  //   }
-  //   ret << std::flush;
-  //   return ret.str();
-  // }
 
   std::string strUID() {
     if (UID == nullptr) return "null";

@@ -27,47 +27,47 @@ int main() {
   everloop.Setup(&bus);
 
   hal::NFCSensor nfcSensor;
-  hal::NFCData nfcData;
+  hal::NFCInfo nfcInfo;
 
   // Get red UID
   std::cout << "Scan Red Tag" << std::endl;
   while (true) {
-    if (nfcData.recentlyUpdated) break;
-    nfcSensor.Read(&nfcData);
+    if (nfcInfo.recentlyUpdated) break;
+    nfcSensor.Read(&nfcInfo);
   }
-  redUID = nfcData.strUID();
+  redUID = nfcInfo.strUID();
 
-  nfcData.recentlyUpdated = false;
+  nfcInfo.recentlyUpdated = false;
 
   // Get green UID
   std::cout << "Scan Green Tag" << std::endl;
   while (true) {
-    if (nfcData.recentlyUpdated && nfcData.strUID() != redUID) break;
-    nfcSensor.Read(&nfcData);
+    if (nfcInfo.recentlyUpdated && nfcInfo.strUID() != redUID) break;
+    nfcSensor.Read(&nfcInfo);
   }
-  greenUID = nfcData.strUID();
+  greenUID = nfcInfo.strUID();
 
-  nfcData.recentlyUpdated = false;
+  nfcInfo.recentlyUpdated = false;
 
   // Get blue UID
   std::cout << "Scan Blue Tag" << std::endl;
   while (true) {
-    if (nfcData.recentlyUpdated && nfcData.strUID() != redUID &&
-        nfcData.strUID() != greenUID)
+    if (nfcInfo.recentlyUpdated && nfcInfo.strUID() != redUID &&
+        nfcInfo.strUID() != greenUID)
       break;
-    nfcSensor.Read(&nfcData);
+    nfcSensor.Read(&nfcInfo);
   }
-  blueUID = nfcData.strUID();
+  blueUID = nfcInfo.strUID();
 
-  nfcData.recentlyUpdated = false;
+  nfcInfo.recentlyUpdated = false;
 
   std::cout << "\nScan specified tags to activate Everloop" << std::endl;
 
   do {
-    nfcSensor.Read(&nfcData);
+    nfcSensor.Read(&nfcInfo);
 
-    if (nfcData.recentlyUpdated) {
-      std::string currUID = nfcData.strUID();
+    if (nfcInfo.recentlyUpdated) {
+      std::string currUID = nfcInfo.strUID();
       if (redUID == currUID) {
         for (hal::LedValue &led : image1d.leds) {
           led.red = 50;

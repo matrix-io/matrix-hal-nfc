@@ -7,7 +7,7 @@ using std::cout;
 using std::endl;
 
 // void ReadNdefMessage(phalTop_Sw_DataParams_t *phalTop, uint8_t tagTechnology,
-//                      matrix_hal::NFCData *nfcData) {
+//                      matrix_hal::NFCInfo *nfcInfo) {
 // // Get the phalTop component
 // phalTop_Sw_DataParams_t *pTop =
 //     (phalTop_Sw_DataParams_t *)phNfcLib_GetDataParams(PH_COMP_AL_TOP);
@@ -36,58 +36,58 @@ using std::endl;
 //     // DEBUG_PRINTF("\tNDEF message:\n");
 //     // DumpBuffer(aData, lengthNDEF);
 //     // DumpBuffer(bufferNDEF, 50);
-//     nfcData->NDEF = std::unique_ptr<std::vector<uint8_t>>(
+//     nfcInfo->NDEF = std::unique_ptr<std::vector<uint8_t>>(
 //         new std::vector<uint8_t>(NDEFbuffer, NDEFbuffer + NDEFlength));
 //   } else {
-//     nfcData->NDEF =
+//     nfcInfo->NDEF =
 //         std::unique_ptr<std::vector<uint8_t>>(new std::vector<uint8_t>());
 //   }
 // }
 // }
 
 void ExportTagInfo(phacDiscLoop_Sw_DataParams_t *pDataParams,
-                   uint16_t tagTechnology, matrix_hal::NFCData *nfcData) {
-  nfcData->reset();
+                   uint16_t tagTechnology, matrix_hal::NFCInfo *nfcInfo) {
+  nfcInfo->reset();
   uint8_t bTagType;
 #if defined(NXPBUILD__PHAC_DISCLOOP_TYPEA_TAGS) || \
     defined(NXPBUILD__PHAC_DISCLOOP_TYPEA_P2P_ACTIVE)
   if (PHAC_DISCLOOP_CHECK_ANDMASK(tagTechnology,
                                   PHAC_DISCLOOP_POS_BIT_MASK_A)) {
-    nfcData->technology = "A";
+    nfcInfo->technology = "A";
     uint8_t UIDsize = pDataParams->sTypeATargetInfo.aTypeA_I3P3[0].bUidSize;
     uint8_t *UIDptr = pDataParams->sTypeATargetInfo.aTypeA_I3P3[0].aUid;
-    nfcData->UID = std::unique_ptr<std::vector<uint8_t>>(
+    nfcInfo->UID = std::unique_ptr<std::vector<uint8_t>>(
         new std::vector<uint8_t>(UIDptr, UIDptr + UIDsize));
     uint8_t ATQsize = PHAC_DISCLOOP_I3P3A_MAX_ATQA_LENGTH;
     uint8_t *ATQptr = pDataParams->sTypeATargetInfo.aTypeA_I3P3[0].aAtqa;
-    nfcData->ATQ = std::unique_ptr<std::vector<uint8_t>>(
+    nfcInfo->ATQ = std::unique_ptr<std::vector<uint8_t>>(
         new std::vector<uint8_t>(ATQptr, ATQptr + ATQsize));
-    nfcData->SAK = pDataParams->sTypeATargetInfo.aTypeA_I3P3[0].aSak;
+    nfcInfo->SAK = pDataParams->sTypeATargetInfo.aTypeA_I3P3[0].aSak;
     if (pDataParams->sTypeATargetInfo.bT1TFlag) {
-      nfcData->type = "1";
+      nfcInfo->type = "1";
       /* Check for NDEF and Read */
-      // ReadNdefMessage(nullptr, PHAL_TOP_TAG_TYPE_T1T_TAG, nfcData);
+      // ReadNdefMessage(nullptr, PHAL_TOP_TAG_TYPE_T1T_TAG, nfcInfo);
     } else {
       bTagType = (pDataParams->sTypeATargetInfo.aTypeA_I3P3[0].aSak & 0x60);
       bTagType = bTagType >> 5;
       switch (bTagType) {
         case PHAC_DISCLOOP_TYPEA_TYPE2_TAG_CONFIG_MASK:
-          nfcData->type = "2";
+          nfcInfo->type = "2";
           /* Check for NDEF and Read */
-          // ReadNdefMessage(nullptr, PHAL_TOP_TAG_TYPE_T2T_TAG, nfcData);
+          // ReadNdefMessage(nullptr, PHAL_TOP_TAG_TYPE_T2T_TAG, nfcInfo);
           break;
         case PHAC_DISCLOOP_TYPEA_TYPE4A_TAG_CONFIG_MASK:
-          nfcData->type = "4A";
+          nfcInfo->type = "4A";
           /* Check for NDEF and Read */
-          // ReadNdefMessage(nullptr, PHAL_TOP_TAG_TYPE_T4T_TAG, nfcData);
+          // ReadNdefMessage(nullptr, PHAL_TOP_TAG_TYPE_T4T_TAG, nfcInfo);
           break;
         case PHAC_DISCLOOP_TYPEA_TYPE_NFC_DEP_TAG_CONFIG_MASK:
-          nfcData->type = "P2P";
+          nfcInfo->type = "P2P";
           break;
         case PHAC_DISCLOOP_TYPEA_TYPE_NFC_DEP_TYPE4A_TAG_CONFIG_MASK:
-          nfcData->type = "NFC_DEP & 4A";
+          nfcInfo->type = "NFC_DEP & 4A";
           /* Check for NDEF and Read */
-          // ReadNdefMessage(nullptr, PHAL_TOP_TAG_TYPE_T4T_TAG, nfcData);
+          // ReadNdefMessage(nullptr, PHAL_TOP_TAG_TYPE_T4T_TAG, nfcInfo);
           break;
         default:
           break;
@@ -98,15 +98,15 @@ void ExportTagInfo(phacDiscLoop_Sw_DataParams_t *pDataParams,
 #ifdef NXPBUILD__PHAC_DISCLOOP_TYPEB_TAGS
   if (PHAC_DISCLOOP_CHECK_ANDMASK(tagTechnology,
                                   PHAC_DISCLOOP_POS_BIT_MASK_B)) {
-    nfcData->technology = "B";
+    nfcInfo->technology = "B";
     /* PUPI Length is always 4 bytes */
     uint8_t UIDsize = 0x04;
     uint8_t *UIDptr = pDataParams->sTypeBTargetInfo.aTypeB_I3P3[0].aPupi;
-    nfcData->UID = std::unique_ptr<std::vector<uint8_t>>(
+    nfcInfo->UID = std::unique_ptr<std::vector<uint8_t>>(
         new std::vector<uint8_t>(UIDptr, UIDptr + UIDsize));
     uint8_t ATQsize = pDataParams->sTypeBTargetInfo.aTypeB_I3P3[0].bAtqBLength;
     uint8_t *ATQptr = pDataParams->sTypeBTargetInfo.aTypeB_I3P3[0].aAtqB;
-    nfcData->ATQ = std::unique_ptr<std::vector<uint8_t>>(
+    nfcInfo->ATQ = std::unique_ptr<std::vector<uint8_t>>(
         new std::vector<uint8_t>(ATQptr, ATQptr + ATQsize));
   }
 #endif
@@ -115,24 +115,24 @@ void ExportTagInfo(phacDiscLoop_Sw_DataParams_t *pDataParams,
                                   PHAC_DISCLOOP_POS_BIT_MASK_F212) ||
       PHAC_DISCLOOP_CHECK_ANDMASK(tagTechnology,
                                   PHAC_DISCLOOP_POS_BIT_MASK_F424)) {
-    nfcData->technology = "F";
+    nfcInfo->technology = "F";
     uint8_t UIDsize = PHAC_DISCLOOP_FELICA_IDM_LENGTH;
     uint8_t *UIDptr = pDataParams->sTypeFTargetInfo.aTypeFTag[0].aIDmPMm;
-    nfcData->UID = std::unique_ptr<std::vector<uint8_t>>(
+    nfcInfo->UID = std::unique_ptr<std::vector<uint8_t>>(
         new std::vector<uint8_t>(UIDptr, UIDptr + UIDsize));
     if ((pDataParams->sTypeFTargetInfo.aTypeFTag[0].aIDmPMm[0] == 0x01) &&
         (pDataParams->sTypeFTargetInfo.aTypeFTag[0].aIDmPMm[1] == 0xFE)) {
-      nfcData->type = "P2P";
+      nfcInfo->type = "P2P";
     } else {
-      nfcData->type = "3";
+      nfcInfo->type = "3";
       /* Check for NDEF and Read */
-      // ReadNdefMessage(nullptr, PHAL_TOP_TAG_TYPE_T3T_TAG, nfcData);
+      // ReadNdefMessage(nullptr, PHAL_TOP_TAG_TYPE_T3T_TAG, nfcInfo);
     }
     if (pDataParams->sTypeFTargetInfo.aTypeFTag[0].bBaud !=
         PHAC_DISCLOOP_CON_BITR_212) {
-      nfcData->bitRate = 424;
+      nfcInfo->bitRate = 424;
     } else {
-      nfcData->bitRate = 212;
+      nfcInfo->bitRate = 212;
     }
   }
 #endif
@@ -156,9 +156,9 @@ NFCSensor::NFCSensor() {
 
 NFCSensor::~NFCSensor() { (void)phNfcLib_DeInit(); }
 
-void NFCSensor::Read(NFCData *nfcData) {
+void NFCSensor::Read(NFCInfo *nfcInfo) {
   // Read function takes between 30ms and 40ms to run.
-  nfcData->recentlyUpdated = false;
+  nfcInfo->recentlyUpdated = false;
   uint16_t tagTechType = 0;
   // Disable blocking so that function will exit if no detection made
   phNfcLib_SetConfig_Value(PH_NFCLIB_CONFIG_ACTIVATION_BLOCKING, PH_OFF);
@@ -169,7 +169,7 @@ void NFCSensor::Read(NFCData *nfcData) {
   // Hook into the discovery loop and pull UID/AQT(A/B)/SAK/Type from there
   phacDiscLoop_GetConfig(pDiscLoop, PHAC_DISCLOOP_CONFIG_TECH_DETECTED,
                          &tagTechType);
-  if (tagTechType != 0) ExportTagInfo(pDiscLoop, tagTechType, nfcData);
+  if (tagTechType != 0) ExportTagInfo(pDiscLoop, tagTechType, nfcInfo);
   nfcLibStatus =
       phNfcLib_Deactivate(PH_NFCLIB_DEACTIVATION_MODE_RELEASE, &PeerInfo);
   if (nfcLibStatus != PH_NFCLIB_STATUS_SUCCESS) {

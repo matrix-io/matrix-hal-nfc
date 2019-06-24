@@ -6,7 +6,7 @@
 #include <iostream>
 #include <memory>
 
-#include "nfc_data.h"
+#include "nfc_info.h"
 
 extern "C" {
 // This MUST be included last!
@@ -37,10 +37,10 @@ uint16_t wAppHCEBuffSize = sizeof(aAppHCEBuf);
 }
 
 // void ReadNdefMessage(phalTop_Sw_DataParams_t *phalTop, uint8_t tagTechnology,
-//                      matrix_hal::NFCData *nfcData);
+//                      matrix_hal::NFCInfo *nfcInfo);
 
 void ExportTagInfo(phacDiscLoop_Sw_DataParams_t *pDataParams,
-                   uint16_t tagTechnology, matrix_hal::NFCData *nfcData);
+                   uint16_t tagTechnology, matrix_hal::NFCInfo *nfcInfo);
 
 namespace matrix_hal {
 
@@ -62,7 +62,7 @@ class NFCSensor {
   // Begin Public User Functions
   NFCSensor();
   ~NFCSensor();
-  void Read(NFCData *nfcData);
+  void Read(NFCInfo *nfcInfo);
   // End Public User Functions
 };
 
