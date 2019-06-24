@@ -7,7 +7,7 @@
 #include "matrix_hal/everloop_image.h"
 #include "matrix_hal/matrixio_bus.h"
 
-#include "matrix_nfc/nfc_data.h"
+#include "matrix_nfc/nfc_info.h"
 #include "matrix_nfc/nfc_sensor.h"
 
 using namespace std;

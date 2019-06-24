@@ -2,7 +2,7 @@
 cmake_minimum_required(VERSION 2.8)
 set(CMAKE_CXX_STANDARD 11)
 
-project(matrix-hal-nfc C CXX)
+project(matrix_hal_nfc C CXX)
 
 # NXP Lib requires this
 option(PLATFORM_RaspberryPi  "Platform is RaspberryPi"                                ON)
@@ -98,6 +98,3 @@ target_link_libraries(
 install(TARGETS matrix_hal_nfc DESTINATION lib)
 
 install(FILES ${matrix_hal_nfc_headers} DESTINATION include/matrix_nfc)
-
-# Compile Examples
-add_subdirectory(examples examples)
