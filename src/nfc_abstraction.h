@@ -5,8 +5,8 @@
 extern "C" {
 #endif
 
-#include "matrix_nfc/nxp_nfc/NxpNfcRdLib/intfs/phNfcLib.h"
-#include "matrix_nfc/nxp_nfc/NxpNfcRdLib/types/ph_Status.h"
+#include <matrix_nfc/nxp_nfc/NxpNfcRdLib/intfs/phNfcLib.h>
+#include <matrix_nfc/nxp_nfc/NxpNfcRdLib/types/ph_Status.h>
 
 // #include "matrix_nfc/nxp_nfc/NfcrdlibEx3_NFCForum/intfs/cards.h"
 // #include "matrix_nfc/nxp_nfc/NfcrdlibEx3_NFCForum/intfs/phApp_Init.h"

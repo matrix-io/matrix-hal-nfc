@@ -44,7 +44,11 @@ int main() {
   const float freq = 0.375;
 
   do {
+    auto start = chrono::steady_clock::now();
     nfcSensor.Read(&nfcData);
+    auto end = chrono::steady_clock::now();
+    auto diff = end - start;
+    cout << chrono::duration<double, milli>(diff).count() << " ms" << endl;
 
     if (nfcData.recentlyUpdated) {
       std::string currUID = nfcData.strUID();

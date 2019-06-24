@@ -1,10 +1,13 @@
 # This build file is for matrix-hal-nfc, it integrates with the NXP NFC Reader Library
 cmake_minimum_required(VERSION 2.8)
+set(CMAKE_CXX_STANDARD 11)
 
 project(matrix-hal-nfc C CXX)
 
 # NXP Lib requires this
 option(PLATFORM_RaspberryPi  "Platform is RaspberryPi"                                ON)
+
+add_definitions(-g -fpermissive)
 
 # NXP Lib requires this
 if(${PLATFORM_RaspberryPi})
@@ -21,8 +24,6 @@ include_directories(
 
 # Compile NXP lib
 add_subdirectory(/usr/local/include/matrix_nfc/nxp_nfc/NxpNfcRdLib nxp_lib)
-
-add_definitions(-std=c++11 -fpermissive)
 
 # Include header files needed for compiling matrix-hal-nfc 
 include_directories(

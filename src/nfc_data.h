@@ -3,6 +3,7 @@
 
 #include <iomanip>
 #include <iostream>
+#include <memory>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -11,8 +12,9 @@ namespace matrix_hal {
 class NFCData {
  public:
   bool recentlyUpdated = false;
-  std::vector<int> UID = {-1};
-  std::vector<int> ATQ = {-1};
+  // std::unique_ptr<std::vector<uint8_t>> NDEF;
+  std::unique_ptr<std::vector<uint8_t>> UID;
+  std::unique_ptr<std::vector<uint8_t>> ATQ;
   int SAK = -1;
   int bitRate = -1;
   std::string technology = "null";
@@ -22,29 +24,43 @@ class NFCData {
   void reset() {
     // Reset data before populaing with info from new object
     recentlyUpdated = true;
-    UID = {-1};
-    ATQ = {-1};
+    // NDEF.reset();
+    UID.reset();
+    ATQ.reset();
     SAK = -1;
     bitRate = -1;
     technology = "null";
     type = "null";
   }
 
-  std::string str() {
-    std::stringstream ret;
-    ret << "Technology : " << technology << std::endl;
-    ret << "UID : " << strUID() << std::endl;
-    ret << "ATQ(A/B) : " << strATQ() << std::endl;
-    ret << "SAK : " << strSAK() << std::endl;
-    ret << "Type : " << type << std::flush;
-    return ret.str();
-  }
+  // std::string strNDEFChar() {
+  //   if (NDEF == nullptr) return "null";
+  //   std::stringstream ret;
+  //   ret << "0x";
+  //   for (int i : *NDEF) {
+  //     ret << +i << " ";
+  //   }
+  //   ret << std::flush;
+  //   return ret.str();
+  // }
+
+  // std::string strNDEF() {
+  //   if (NDEF == nullptr) return "null";
+  //   std::stringstream ret;
+  //   ret << "0x";
+  //   for (int i : *NDEF) {
+  //     ret << std::setfill('0') << std::setw(2) << std::hex << std::uppercase
+  //         << +i;
+  //   }
+  //   ret << std::flush;
+  //   return ret.str();
+  // }
 
   std::string strUID() {
-    if (UID == std::vector<int>({-1})) return "null";
+    if (UID == nullptr) return "null";
     std::stringstream ret;
     ret << "0x";
-    for (int i : UID) {
+    for (int i : *UID) {
       ret << std::setfill('0') << std::setw(2) << std::hex << std::uppercase
           << +i;
     }
@@ -53,10 +69,10 @@ class NFCData {
   }
 
   std::string strATQ() {
-    if (ATQ == std::vector<int>({-1})) return "null";
+    if (ATQ == nullptr) return "null";
     std::stringstream ret;
     ret << "0x";
-    for (int i : ATQ) {
+    for (int i : *ATQ) {
       ret << std::setfill('0') << std::setw(2) << std::hex << std::uppercase
           << +i;
     }
@@ -69,6 +85,16 @@ class NFCData {
     std::stringstream ret;
     ret << "0x" << std::setfill('0') << std::setw(2) << std::hex
         << std::uppercase << +SAK << std::flush;
+    return ret.str();
+  }
+
+  std::string str() {
+    std::stringstream ret;
+    ret << "Technology : " << technology << std::endl;
+    ret << "UID : " << strUID() << std::endl;
+    ret << "ATQ(A/B) : " << strATQ() << std::endl;
+    ret << "SAK : " << strSAK() << std::endl;
+    ret << "Type : " << type << std::flush;
     return ret.str();
   }
 };

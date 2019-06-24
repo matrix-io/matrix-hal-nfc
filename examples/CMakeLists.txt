@@ -1,5 +1,6 @@
 # project(malos_service C CXX)
 cmake_minimum_required(VERSION 2.8)
+set(CMAKE_CXX_STANDARD 11)
 
 project(Example C CXX)
 
@@ -12,8 +13,6 @@ if(${PLATFORM_RaspberryPi})
     add_definitions(-DDEBUG)
     add_definitions(-DNXPBUILD__PH_RASPBERRY_PI)
 endif(${PLATFORM_RaspberryPi})
-
-add_definitions(-std=c++11 -fpermissive) #
 
 # Include NXP Lib headers
 include_directories(

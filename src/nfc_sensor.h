@@ -4,10 +4,14 @@
 #define MATRIX_HAL_NFC_SENSOR_H
 
 #include <iostream>
+#include <memory>
 
 #include "nfc_data.h"
 
 #include "nfc_abstraction.h"  // This MUST be included last!
+
+void ReadNdefMessage(phalTop_Sw_DataParams_t *phalTop, uint8_t tagTechnology,
+                     matrix_hal::NFCData *nfcData);
 
 void ExportTagInfo(phacDiscLoop_Sw_DataParams_t *pDataParams,
                    uint16_t tagTechnology, matrix_hal::NFCData *nfcData);
@@ -26,7 +30,6 @@ class NFCSensor {
   phNfcLib_Transmit_t phNfcLib_TransmitInput;
   phNfcLib_PeerInfo_t PeerInfo = {0};
   uint8_t bDataBuffer[DATA_BUFFER_LEN]; /* universal data buffer */
-  // End Variable Setup for Simplified NXP Lib
 
   // Begin Public User Functions
   NFCSensor();
