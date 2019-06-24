@@ -7,7 +7,7 @@ project(matrix-hal-nfc C CXX)
 # NXP Lib requires this
 option(PLATFORM_RaspberryPi  "Platform is RaspberryPi"                                ON)
 
-add_definitions(-g -fpermissive)
+add_definitions(-Wall)
 
 # NXP Lib requires this
 if(${PLATFORM_RaspberryPi})
@@ -37,7 +37,6 @@ set(nxp_init "/usr/local/include/matrix_nfc/nxp_nfc/NfcrdlibEx3_NFCForum/src/phA
 set(nxp_cards "/usr/local/include/matrix_nfc/nxp_nfc/NfcrdlibEx3_NFCForum/src/cards.c")
 
 set(matrix_hal_nfc_headers
-./src/nfc_abstraction.h
 ./src/nfc_data.h
 ./src/nfc_sensor.h
 )
