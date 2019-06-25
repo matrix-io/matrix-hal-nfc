@@ -27,16 +27,16 @@ int main() {
 
   everloop.Setup(&bus);
 
-  hal::NFCSensor nfcSensor;
-  hal::NFCInfo nfcInfo;
+  hal::NFCSensor nfc_sensor;
+  hal::NFCInfo nfc_info;
 
   // Get switch UID
   std::cout << "Scan ON/OFF Tag" << std::endl;
   while (true) {
-    if (nfcInfo.recentlyUpdated) break;
-    nfcSensor.SimpleReadInfo(&nfcInfo);
+    if (nfc_info.recentlyUpdated) break;
+    nfc_sensor.SimpleReadInfo(&nfc_info);
   }
-  switchUID = nfcInfo.strUID();
+  switchUID = nfc_info.strHexUID();
 
   std::cout << "ON/OFF Tag Scanned!" << std::endl;
 
@@ -45,13 +45,13 @@ int main() {
 
   do {
     auto start = chrono::steady_clock::now();
-    nfcSensor.SimpleReadInfo(&nfcInfo);
+    nfc_sensor.SimpleReadInfo(&nfc_info);
     auto end = chrono::steady_clock::now();
     auto diff = end - start;
     cout << chrono::duration<double, milli>(diff).count() << " ms" << endl;
 
-    if (nfcInfo.recentlyUpdated) {
-      std::string currUID = nfcInfo.strUID();
+    if (nfc_info.recentlyUpdated) {
+      std::string currUID = nfc_info.strHexUID();
       if (switchUID == currUID) {
         for (matrix_hal::LedValue &led : everloop_image.leds) {
           // Sine waves 120 degrees out of phase for rainbow

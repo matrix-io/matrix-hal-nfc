@@ -57,21 +57,21 @@ class NFCSensor {
   // Begin Public User Functions
   NFCSensor();
   ~NFCSensor();
-  void SimpleReadInfo(NFCInfo *nfcInfo);
-  void Activate();  // Activates Card
-  void Deactivate();
-  void ReadInfo(NFCInfo *nfcInfo);
+  bool SimpleReadInfo(NFCInfo *nfcInfo);
+  bool Activate();  // Activates Card
+  bool Deactivate();
+  bool ReadInfo(NFCInfo *nfcInfo);
   std::vector<uint8_t> ReadPage(uint8_t pageNumber);
   void ReadData(NFCData *nfcData);
-  void WritePage(uint8_t pageNumber, std::vector<uint8_t> data);
-
+  bool WritePage(uint8_t pageNumber, std::vector<uint8_t> writeData);
   // End Public User Functions
  private:
   // Begin Private Helper Functions
   void ExportTagInfo(phacDiscLoop_Sw_DataParams_t *pDataParams,
                      uint16_t tagTechnology, NFCInfo *nfcInfo);
   std::vector<uint8_t> ReadPage_MFUL_NTAG(uint8_t pageNumber);
-  void WritePage_MFUL_NTAG(uint8_t pageNumber, std::vector<uint8_t> data);
+  bool WritePage_MFUL_NTAG(uint8_t pageNumber, std::vector<uint8_t> data);
+  // End Private Helper Functions
 };
 
 }  // namespace matrix_hal

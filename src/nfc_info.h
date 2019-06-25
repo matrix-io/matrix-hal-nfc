@@ -31,7 +31,7 @@ class NFCInfo {
     type = "null";
   }
 
-  std::string strUID() {
+  std::string strHexUID() {
     if (UID.empty()) return "null";
     std::stringstream ret;
     ret << "0x";
@@ -43,7 +43,7 @@ class NFCInfo {
     return ret.str();
   }
 
-  std::string strATQ() {
+  std::string strHexATQ() {
     if (ATQ.empty()) return "null";
     std::stringstream ret;
     ret << "0x";
@@ -55,7 +55,7 @@ class NFCInfo {
     return ret.str();
   }
 
-  std::string strSAK() {
+  std::string strHexSAK() {
     if (SAK == -1) return "null";
     std::stringstream ret;
     ret << "0x" << std::setfill('0') << std::setw(2) << std::hex
@@ -66,9 +66,9 @@ class NFCInfo {
   std::string str() {
     std::stringstream ret;
     ret << "Technology : " << technology << std::endl;
-    ret << "UID : " << strUID() << std::endl;
-    ret << "ATQ(A/B) : " << strATQ() << std::endl;
-    ret << "SAK : " << strSAK() << std::endl;
+    ret << "UID : " << strHexUID() << std::endl;
+    ret << "ATQ(A/B) : " << strHexATQ() << std::endl;
+    ret << "SAK : " << strHexSAK() << std::endl;
     ret << "Type : " << type << std::flush;
     return ret.str();
   }

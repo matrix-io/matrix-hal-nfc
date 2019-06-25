@@ -19,52 +19,37 @@ using std::endl;
 
 namespace hal = matrix_hal;
 
-std::string strVector(const std::vector<uint8_t> &vec) {
-  std::stringstream ret;
-  ret << "0x";
-  for (int i : vec) {
-    ret << std::setfill('0') << std::setw(2) << std::hex << std::uppercase
-        << +i;
-  }
-  ret << std::flush;
-  return ret.str();
-}
-
 int main() {
   hal::MatrixIOBus bus;
 
   if (!bus.Init()) return false;
 
-  hal::EverloopImage image1d(bus.MatrixLeds());
+  hal::EverloopImage everloop_image(bus.MatrixLeds());
 
   hal::Everloop everloop;
 
   everloop.Setup(&bus);
 
-  hal::NFCSensor nfcSensor;
-  hal::NFCInfo nfcInfo;
+  hal::NFCSensor nfc_sensor;
+  hal::NFCData nfc_data;
 
   cout << "Scan a Tag, Any Tag!" << endl;
 
-  uint8_t pageNumber = 0;
-  std::vector<uint8_t> result;
-
   do {
-    result.clear();
-    nfcSensor.Activate();
-    result = nfcSensor.ReadPage(pageNumber);
-    nfcSensor.Deactivate();
+    nfc_sensor.Activate();
+    nfc_sensor.ReadData(&nfc_data);
+    bool readFinish = nfc_sensor.Deactivate();
 
-    if (!result.empty()) {
-      cout << strVector(result) << endl << endl;
-      for (hal::LedValue &led : image1d.leds) {
+    if (nfc_data.recentlyUpdated && readFinish) {
+      cout << nfc_data.strHex() << endl << endl;
+      for (hal::LedValue &led : everloop_image.leds) {
         led.red = 0;
         led.green = 20;
         led.blue = 0;
         led.white = 0;
       }
     } else {
-      for (hal::LedValue &led : image1d.leds) {
+      for (hal::LedValue &led : everloop_image.leds) {
         led.red = 0;
         led.green = 0;
         led.blue = 0;
@@ -72,7 +57,7 @@ int main() {
       }
     }
 
-    everloop.Write(&image1d);
+    everloop.Write(&everloop_image);
 
     std::this_thread::sleep_for(std::chrono::microseconds(10000));
   } while (true);

@@ -19,30 +19,30 @@ int main() {
 
   if (!bus.Init()) return false;
 
-  hal::EverloopImage image1d(bus.MatrixLeds());
+  hal::EverloopImage everloop_image(bus.MatrixLeds());
 
   hal::Everloop everloop;
 
   everloop.Setup(&bus);
 
-  hal::NFCSensor nfcSensor;
-  hal::NFCInfo nfcInfo;
+  hal::NFCSensor nfc_sensor;
+  hal::NFCInfo nfc_info;
 
   cout << "Scan a Tag, Any Tag!" << endl;
 
   do {
-    nfcSensor.SimpleReadInfo(&nfcInfo);
+    nfc_sensor.SimpleReadInfo(&nfc_info);
 
-    if (nfcInfo.recentlyUpdated) {
-      cout << nfcInfo.str() << endl << endl;
-      for (hal::LedValue &led : image1d.leds) {
+    if (nfc_info.recentlyUpdated) {
+      cout << nfc_info.str() << endl << endl;
+      for (hal::LedValue &led : everloop_image.leds) {
         led.red = 0;
         led.green = 20;
         led.blue = 0;
         led.white = 0;
       }
     } else {
-      for (hal::LedValue &led : image1d.leds) {
+      for (hal::LedValue &led : everloop_image.leds) {
         led.red = 0;
         led.green = 0;
         led.blue = 0;
@@ -50,7 +50,7 @@ int main() {
       }
     }
 
-    everloop.Write(&image1d);
+    everloop.Write(&everloop_image);
 
     std::this_thread::sleep_for(std::chrono::microseconds(10000));
   } while (true);

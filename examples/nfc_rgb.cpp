@@ -20,70 +20,70 @@ int main() {
 
   if (!bus.Init()) return false;
 
-  hal::EverloopImage image1d(bus.MatrixLeds());
+  hal::EverloopImage everloop_image(bus.MatrixLeds());
 
   hal::Everloop everloop;
 
   everloop.Setup(&bus);
 
-  hal::NFCSensor nfcSensor;
-  hal::NFCInfo nfcInfo;
+  hal::NFCSensor nfc_sensor;
+  hal::NFCInfo nfc_info;
 
   // Get red UID
   std::cout << "Scan Red Tag" << std::endl;
   while (true) {
-    if (nfcInfo.recentlyUpdated) break;
-    nfcSensor.SimpleReadInfo(&nfcInfo);
+    if (nfc_info.recentlyUpdated) break;
+    nfc_sensor.SimpleReadInfo(&nfc_info);
   }
-  redUID = nfcInfo.strUID();
+  redUID = nfc_info.strHexUID();
 
-  nfcInfo.recentlyUpdated = false;
+  nfc_info.recentlyUpdated = false;
 
   // Get green UID
   std::cout << "Scan Green Tag" << std::endl;
   while (true) {
-    if (nfcInfo.recentlyUpdated && nfcInfo.strUID() != redUID) break;
-    nfcSensor.SimpleReadInfo(&nfcInfo);
+    if (nfc_info.recentlyUpdated && nfc_info.strHexUID() != redUID) break;
+    nfc_sensor.SimpleReadInfo(&nfc_info);
   }
-  greenUID = nfcInfo.strUID();
+  greenUID = nfc_info.strHexUID();
 
-  nfcInfo.recentlyUpdated = false;
+  nfc_info.recentlyUpdated = false;
 
   // Get blue UID
   std::cout << "Scan Blue Tag" << std::endl;
   while (true) {
-    if (nfcInfo.recentlyUpdated && nfcInfo.strUID() != redUID &&
-        nfcInfo.strUID() != greenUID)
+    if (nfc_info.recentlyUpdated && nfc_info.strHexUID() != redUID &&
+        nfc_info.strHexUID() != greenUID)
       break;
-    nfcSensor.SimpleReadInfo(&nfcInfo);
+    nfc_sensor.SimpleReadInfo(&nfc_info);
   }
-  blueUID = nfcInfo.strUID();
+  blueUID = nfc_info.strHexUID();
 
-  nfcInfo.recentlyUpdated = false;
+  nfc_info.recentlyUpdated = false;
 
   std::cout << "\nScan specified tags to activate Everloop" << std::endl;
 
   do {
-    nfcSensor.SimpleReadInfo(&nfcInfo);
+    nfc_sensor.SimpleReadInfo(&nfc_info);
 
-    if (nfcInfo.recentlyUpdated) {
-      std::string currUID = nfcInfo.strUID();
+    if (nfc_info.recentlyUpdated) {
+      std::string currUID = nfc_info.strHexUID();
       if (redUID == currUID) {
-        for (hal::LedValue &led : image1d.leds) {
+        for (hal::LedValue &led : everloop_image.leds) {
           led.red = 50;
           led.green = 0;
           led.blue = 0;
           led.white = 0;
         }
       } else if (greenUID == currUID) {
-        for (hal::LedValue &led : image1d.leds) {
+        for (hal::LedValue &led : everloop_image.leds) {
           led.red = 0;
           led.green = 50;
           led.blue = 0;
           led.white = 0;
         }
       } else if (blueUID == currUID) {
-        for (hal::LedValue &led : image1d.leds) {
+        for (hal::LedValue &led : everloop_image.leds) {
           led.red = 0;
           led.green = 0;
           led.blue = 50;
@@ -91,7 +91,7 @@ int main() {
         }
       }
     } else {
-      for (hal::LedValue &led : image1d.leds) {
+      for (hal::LedValue &led : everloop_image.leds) {
         led.red = 0;
         led.green = 0;
         led.blue = 0;
@@ -99,7 +99,7 @@ int main() {
       }
     }
 
-    everloop.Write(&image1d);
+    everloop.Write(&everloop_image);
 
     std::this_thread::sleep_for(std::chrono::microseconds(10000));
   } while (true);
