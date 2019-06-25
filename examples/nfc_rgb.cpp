@@ -33,7 +33,7 @@ int main() {
   std::cout << "Scan Red Tag" << std::endl;
   while (true) {
     if (nfcInfo.recentlyUpdated) break;
-    nfcSensor.Read(&nfcInfo);
+    nfcSensor.SimpleReadInfo(&nfcInfo);
   }
   redUID = nfcInfo.strUID();
 
@@ -43,7 +43,7 @@ int main() {
   std::cout << "Scan Green Tag" << std::endl;
   while (true) {
     if (nfcInfo.recentlyUpdated && nfcInfo.strUID() != redUID) break;
-    nfcSensor.Read(&nfcInfo);
+    nfcSensor.SimpleReadInfo(&nfcInfo);
   }
   greenUID = nfcInfo.strUID();
 
@@ -55,7 +55,7 @@ int main() {
     if (nfcInfo.recentlyUpdated && nfcInfo.strUID() != redUID &&
         nfcInfo.strUID() != greenUID)
       break;
-    nfcSensor.Read(&nfcInfo);
+    nfcSensor.SimpleReadInfo(&nfcInfo);
   }
   blueUID = nfcInfo.strUID();
 
@@ -64,7 +64,7 @@ int main() {
   std::cout << "\nScan specified tags to activate Everloop" << std::endl;
 
   do {
-    nfcSensor.Read(&nfcInfo);
+    nfcSensor.SimpleReadInfo(&nfcInfo);
 
     if (nfcInfo.recentlyUpdated) {
       std::string currUID = nfcInfo.strUID();

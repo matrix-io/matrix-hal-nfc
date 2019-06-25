@@ -5,7 +5,9 @@
 
 #include <iostream>
 #include <memory>
+#include <vector>
 
+#include "nfc_data.h"
 #include "nfc_info.h"
 
 extern "C" {
@@ -62,7 +64,12 @@ class NFCSensor {
   // Begin Public User Functions
   NFCSensor();
   ~NFCSensor();
-  void Read(NFCInfo *nfcInfo);
+  void SimpleReadInfo(NFCInfo *nfcInfo);
+  void Activate();  // Activates Card
+  void Deactivate();
+  void ReadInfo(NFCInfo *nfcInfo);
+  std::vector<uint8_t> ReadBlock(int block);
+  void ReadData(NFCData *nfcData);
   // End Public User Functions
 };
 

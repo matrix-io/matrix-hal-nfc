@@ -31,7 +31,7 @@ int main() {
   cout << "Scan a Tag, Any Tag!" << endl;
 
   do {
-    nfcSensor.Read(&nfcInfo);
+    nfcSensor.SimpleReadInfo(&nfcInfo);
 
     if (nfcInfo.recentlyUpdated) {
       cout << nfcInfo.str() << endl << endl;

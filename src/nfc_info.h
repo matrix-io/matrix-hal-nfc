@@ -1,5 +1,5 @@
-#ifndef MATRIX_HAL_NFC_DATA_H
-#define MATRIX_HAL_NFC_DATA_H
+#ifndef MATRIX_HAL_NFC_INFO_H
+#define MATRIX_HAL_NFC_INFO_H
 
 #include <iomanip>
 #include <iostream>
@@ -74,4 +74,4 @@ class NFCInfo {
   }
 };
 };      // namespace matrix_hal
-#endif  // MATRIX_HAL_NFC_DATA_H
+#endif  // MATRIX_HAL_NFC_INFO_H

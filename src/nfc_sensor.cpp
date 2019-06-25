@@ -45,8 +45,8 @@ using std::endl;
 // }
 // }
 
-void ExportTagInfo(phacDiscLoop_Sw_DataParams_t *pDataParams,
-                   uint16_t tagTechnology, matrix_hal::NFCInfo *nfcInfo) {
+void ExportTagInfo(phacDiscLoop_Sw_DataParams_t* pDataParams,
+                   uint16_t tagTechnology, matrix_hal::NFCInfo* nfcInfo) {
   nfcInfo->reset();
   uint8_t bTagType;
 #if defined(NXPBUILD__PHAC_DISCLOOP_TYPEA_TAGS) || \
@@ -55,11 +55,11 @@ void ExportTagInfo(phacDiscLoop_Sw_DataParams_t *pDataParams,
                                   PHAC_DISCLOOP_POS_BIT_MASK_A)) {
     nfcInfo->technology = "A";
     uint8_t UIDsize = pDataParams->sTypeATargetInfo.aTypeA_I3P3[0].bUidSize;
-    uint8_t *UIDptr = pDataParams->sTypeATargetInfo.aTypeA_I3P3[0].aUid;
+    uint8_t* UIDptr = pDataParams->sTypeATargetInfo.aTypeA_I3P3[0].aUid;
     nfcInfo->UID = std::unique_ptr<std::vector<uint8_t>>(
         new std::vector<uint8_t>(UIDptr, UIDptr + UIDsize));
     uint8_t ATQsize = PHAC_DISCLOOP_I3P3A_MAX_ATQA_LENGTH;
-    uint8_t *ATQptr = pDataParams->sTypeATargetInfo.aTypeA_I3P3[0].aAtqa;
+    uint8_t* ATQptr = pDataParams->sTypeATargetInfo.aTypeA_I3P3[0].aAtqa;
     nfcInfo->ATQ = std::unique_ptr<std::vector<uint8_t>>(
         new std::vector<uint8_t>(ATQptr, ATQptr + ATQsize));
     nfcInfo->SAK = pDataParams->sTypeATargetInfo.aTypeA_I3P3[0].aSak;
@@ -101,11 +101,11 @@ void ExportTagInfo(phacDiscLoop_Sw_DataParams_t *pDataParams,
     nfcInfo->technology = "B";
     /* PUPI Length is always 4 bytes */
     uint8_t UIDsize = 0x04;
-    uint8_t *UIDptr = pDataParams->sTypeBTargetInfo.aTypeB_I3P3[0].aPupi;
+    uint8_t* UIDptr = pDataParams->sTypeBTargetInfo.aTypeB_I3P3[0].aPupi;
     nfcInfo->UID = std::unique_ptr<std::vector<uint8_t>>(
         new std::vector<uint8_t>(UIDptr, UIDptr + UIDsize));
     uint8_t ATQsize = pDataParams->sTypeBTargetInfo.aTypeB_I3P3[0].bAtqBLength;
-    uint8_t *ATQptr = pDataParams->sTypeBTargetInfo.aTypeB_I3P3[0].aAtqB;
+    uint8_t* ATQptr = pDataParams->sTypeBTargetInfo.aTypeB_I3P3[0].aAtqB;
     nfcInfo->ATQ = std::unique_ptr<std::vector<uint8_t>>(
         new std::vector<uint8_t>(ATQptr, ATQptr + ATQsize));
   }
@@ -117,7 +117,7 @@ void ExportTagInfo(phacDiscLoop_Sw_DataParams_t *pDataParams,
                                   PHAC_DISCLOOP_POS_BIT_MASK_F424)) {
     nfcInfo->technology = "F";
     uint8_t UIDsize = PHAC_DISCLOOP_FELICA_IDM_LENGTH;
-    uint8_t *UIDptr = pDataParams->sTypeFTargetInfo.aTypeFTag[0].aIDmPMm;
+    uint8_t* UIDptr = pDataParams->sTypeFTargetInfo.aTypeFTag[0].aIDmPMm;
     nfcInfo->UID = std::unique_ptr<std::vector<uint8_t>>(
         new std::vector<uint8_t>(UIDptr, UIDptr + UIDsize));
     if ((pDataParams->sTypeFTargetInfo.aTypeFTag[0].aIDmPMm[0] == 0x01) &&
@@ -150,34 +150,55 @@ NFCSensor::NFCSensor() {
   if (nfcLibStatus != PH_NFCLIB_STATUS_SUCCESS) {
     throw "NFC Sensor Init Failed";
   }
-  pDiscLoop = (phacDiscLoop_Sw_DataParams_t *)phNfcLib_GetDataParams(
+  pDiscLoop = (phacDiscLoop_Sw_DataParams_t*)phNfcLib_GetDataParams(
       PH_COMP_AC_DISCLOOP);
+  /* Disable blocking so that activate function will return upon every iteration
+  of discovery loop */
+  phNfcLib_SetConfig_Value(PH_NFCLIB_CONFIG_ACTIVATION_BLOCKING, PH_OFF);
 }
 
 NFCSensor::~NFCSensor() { (void)phNfcLib_DeInit(); }
 
-void NFCSensor::Read(NFCInfo *nfcInfo) {
-  // Read function takes between 30ms and 40ms to run.
-  nfcInfo->recentlyUpdated = false;
-  uint16_t tagTechType = 0;
-  // Disable blocking so that function will exit if no detection made
-  phNfcLib_SetConfig_Value(PH_NFCLIB_CONFIG_ACTIVATION_BLOCKING, PH_OFF);
+void NFCSensor::Activate() {
   nfcLibStatus = phNfcLib_Activate(wTechnologyMask, &PeerInfo, NULL);
   if (nfcLibStatus != PH_NFCLIB_STATUS_PEER_ACTIVATION_DONE) {
     // cerr << "NFC Tag Activation Failed" << endl;
   }
+}
+
+void NFCSensor::Deactivate() {
+  nfcLibStatus =
+      phNfcLib_Deactivate(PH_NFCLIB_DEACTIVATION_MODE_RELEASE, &PeerInfo);
+  if (nfcLibStatus != PH_NFCLIB_STATUS_SUCCESS) {
+    /* cerr << "NFC Tag Deactivate with Release Mode failed, card was removed
+    from vicinity... " << endl; cerr << " Performing Deactivate with RF OFF
+    mode... " << endl; */
+    nfcLibStatus =
+        phNfcLib_Deactivate(PH_NFCLIB_DEACTIVATION_MODE_RF_OFF, &PeerInfo);
+  }
+}
+
+/* This will activate, read and populate info data, then deactivate card */
+void NFCSensor::SimpleReadInfo(NFCInfo* nfcInfo) {
+  nfcInfo->recentlyUpdated = false;
+  uint16_t tagTechType = 0;
+  Activate();
   // Hook into the discovery loop and pull UID/AQT(A/B)/SAK/Type from there
   phacDiscLoop_GetConfig(pDiscLoop, PHAC_DISCLOOP_CONFIG_TECH_DETECTED,
                          &tagTechType);
   if (tagTechType != 0) ExportTagInfo(pDiscLoop, tagTechType, nfcInfo);
-  nfcLibStatus =
-      phNfcLib_Deactivate(PH_NFCLIB_DEACTIVATION_MODE_RELEASE, &PeerInfo);
-  if (nfcLibStatus != PH_NFCLIB_STATUS_SUCCESS) {
-    // cerr << "NFC Tag Deactivate with Release Mode failed, card was removed
-    // from vicinity... " << endl; cerr << " Performing Deactivate with RF OFF
-    // mode... " << endl;
-    nfcLibStatus =
-        phNfcLib_Deactivate(PH_NFCLIB_DEACTIVATION_MODE_RF_OFF, &PeerInfo);
-  }
+  Deactivate();
+}
+
+/* This will only read and populate info data (Card must already have been
+ * activated!)
+ */
+void NFCSensor::ReadInfo(NFCInfo* nfcInfo) {
+  nfcInfo->recentlyUpdated = false;
+  uint16_t tagTechType = 0;
+  // Hook into the discovery loop and pull UID/AQT(A/B)/SAK/Type from there
+  phacDiscLoop_GetConfig(pDiscLoop, PHAC_DISCLOOP_CONFIG_TECH_DETECTED,
+                         &tagTechType);
+  if (tagTechType != 0) ExportTagInfo(pDiscLoop, tagTechType, nfcInfo);
 }
 }  // namespace matrix_hal
