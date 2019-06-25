@@ -1,9 +1,9 @@
 #ifndef MATRIX_HAL_NFC_INFO_H
 #define MATRIX_HAL_NFC_INFO_H
 
+#include <cstdint>
 #include <iomanip>
 #include <iostream>
-#include <memory>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -12,8 +12,8 @@ namespace matrix_hal {
 class NFCInfo {
  public:
   bool recentlyUpdated = false;
-  std::unique_ptr<std::vector<uint8_t>> UID;
-  std::unique_ptr<std::vector<uint8_t>> ATQ;
+  std::vector<uint8_t> UID;
+  std::vector<uint8_t> ATQ;
   int SAK = -1;
   int bitRate = -1;
   std::string technology = "null";
@@ -23,8 +23,8 @@ class NFCInfo {
   void reset() {
     // Reset parameters before populaing with info from new object
     recentlyUpdated = true;
-    UID.reset();
-    ATQ.reset();
+    UID.clear();
+    ATQ.clear();
     SAK = -1;
     bitRate = -1;
     technology = "null";
@@ -32,10 +32,10 @@ class NFCInfo {
   }
 
   std::string strUID() {
-    if (UID == nullptr) return "null";
+    if (UID.empty()) return "null";
     std::stringstream ret;
     ret << "0x";
-    for (int i : *UID) {
+    for (int i : UID) {
       ret << std::setfill('0') << std::setw(2) << std::hex << std::uppercase
           << +i;
     }
@@ -44,10 +44,10 @@ class NFCInfo {
   }
 
   std::string strATQ() {
-    if (ATQ == nullptr) return "null";
+    if (ATQ.empty()) return "null";
     std::stringstream ret;
     ret << "0x";
-    for (int i : *ATQ) {
+    for (int i : ATQ) {
       ret << std::setfill('0') << std::setw(2) << std::hex << std::uppercase
           << +i;
     }

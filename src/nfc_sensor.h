@@ -3,8 +3,8 @@
 #ifndef MATRIX_HAL_NFC_SENSOR_H
 #define MATRIX_HAL_NFC_SENSOR_H
 
+#include <cstdint>
 #include <iostream>
-#include <memory>
 #include <vector>
 
 #include "nfc_data.h"
@@ -38,14 +38,7 @@ uint16_t wAppHCEBuffSize = sizeof(aAppHCEBuf);
 // End Variable Setup for NXP HAL
 }
 
-// void ReadNdefMessage(phalTop_Sw_DataParams_t *phalTop, uint8_t tagTechnology,
-//                      matrix_hal::NFCInfo *nfcInfo);
-
-void ExportTagInfo(phacDiscLoop_Sw_DataParams_t *pDataParams,
-                   uint16_t tagTechnology, matrix_hal::NFCInfo *nfcInfo);
-
 namespace matrix_hal {
-
 class NFCSensor {
  public:
 // Begin Variable Setup for Simplified NXP Lib
@@ -68,9 +61,17 @@ class NFCSensor {
   void Activate();  // Activates Card
   void Deactivate();
   void ReadInfo(NFCInfo *nfcInfo);
-  std::vector<uint8_t> ReadBlock(int block);
+  std::vector<uint8_t> ReadPage(uint8_t pageNumber);
   void ReadData(NFCData *nfcData);
+  void WritePage(uint8_t pageNumber, std::vector<uint8_t> data);
+
   // End Public User Functions
+ private:
+  // Begin Private Helper Functions
+  void ExportTagInfo(phacDiscLoop_Sw_DataParams_t *pDataParams,
+                     uint16_t tagTechnology, NFCInfo *nfcInfo);
+  std::vector<uint8_t> ReadPage_MFUL_NTAG(uint8_t pageNumber);
+  void WritePage_MFUL_NTAG(uint8_t pageNumber, std::vector<uint8_t> data);
 };
 
 }  // namespace matrix_hal
