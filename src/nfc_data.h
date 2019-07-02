@@ -11,30 +11,32 @@
 namespace matrix_hal {
 class NFCData {
  public:
-  bool recentlyUpdated = false;
+  bool recently_updated = false;
   // All data read from the NFC Tag
-  std::vector<std::vector<uint8_t>> readData;
+  std::vector<std::vector<uint8_t>> read_data;
 
   // HELPER FUNCTIONS
-  void reset() {
+  void Reset() {
     // Reset parameters before populaing with info from new object
-    recentlyUpdated = true;
-    readData.clear();
+    recently_updated = true;
+    read_data.clear();
   }
 
-  static std::string strHexByteVec(const std::vector<uint8_t> &vec) {
+  static std::string StrHexByteVec(const std::vector<uint8_t> &vec) {
+    if (vec.empty()) return "";
     std::stringstream ret;
-    for (uint8_t i : vec) {
+    auto end = std::prev(vec.end());
+    for (auto iter = vec.begin(); iter != end; ++iter) {
       ret << std::setfill('0') << std::setw(2) << std::hex << std::uppercase
-          << +i << " ";
+          << +*iter << " ";
     }
-    ret << std::flush;
-    std::string str = ret.str();
-    str.pop_back();
-    return str;
+    ret << std::setfill('0') << std::setw(2) << std::hex << std::uppercase
+        << +*end << std::flush;
+    return ret.str();
   }
 
-  static std::string strCharByteVec(const std::vector<uint8_t> &vec) {
+  static std::string StrCharByteVec(const std::vector<uint8_t> &vec) {
+    if (vec.empty()) return "";
     std::stringstream ret;
     for (uint8_t i : vec) {
       ret << i;
@@ -43,26 +45,30 @@ class NFCData {
     return ret.str();
   }
 
-  std::string strHex() {
-    uint8_t currPage = 0;
+  std::string StrHex() {
+    if (read_data.empty()) return "";
+    uint8_t page_number = 0;
     std::stringstream ret;
-    for (std::vector<uint8_t> vec : readData) {
+    auto end = std::prev(read_data.end());
+    for (auto iter = read_data.begin(); iter != end; ++iter) {
       ret << "Page " << std::setfill('0') << std::setw(2) << std::hex
-          << std::uppercase << +currPage << ": " << strHexByteVec(vec)
+          << std::uppercase << +page_number << ": " << StrHexByteVec(*iter)
           << std::endl;
-      currPage++;
+      ++page_number;
     }
-    std::string str = ret.str();
-    str.pop_back();
-    return str;
+    ret << "Page " << std::setfill('0') << std::setw(2) << std::hex
+        << std::uppercase << +page_number << ": " << StrHexByteVec(*end)
+        << std::flush;
+    return ret.str();
   }
 
-  std::string strChar() {
-    uint8_t currPage = 0;
+  std::string StrChar() {
+    if (read_data.empty()) return "";
+    uint8_t page_number = 0;
     std::stringstream ret;
-    for (std::vector<uint8_t> vec : readData) {
-      ret << strCharByteVec(vec);
-      currPage++;
+    for (std::vector<uint8_t> vec : read_data) {
+      ret << StrCharByteVec(vec);
+      ++page_number;
     }
     ret << std::flush;
     return ret.str();

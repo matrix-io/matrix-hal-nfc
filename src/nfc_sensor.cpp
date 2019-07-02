@@ -9,16 +9,26 @@ using std::endl;
 namespace matrix_hal {
 NFCSensor::NFCSensor() {
   (void)phNfcLib_Init();
-  if (nfcLibStatus != PH_NFCLIB_STATUS_SUCCESS) {
+  if (nfc_lib_status != PH_NFCLIB_STATUS_SUCCESS) {
     throw "NFC Sensor Init Failed";
   }
   /* Configuring the activation profile as ISO */
   phNfcLib_SetConfig_Value(PH_NFCLIB_CONFIG_ACTIVATION_PROFILE,
                            PH_NFCLIB_ACTIVATION_PROFILE_ISO);
-  if (nfcLibStatus != PH_NFCLIB_STATUS_SUCCESS) {
+  if (nfc_lib_status != PH_NFCLIB_STATUS_SUCCESS) {
     throw "NFC Sensor Init Failed";
   }
-  pDiscLoop = (phacDiscLoop_Sw_DataParams_t*)phNfcLib_GetDataParams(
+  bal = (phbalReg_Type_t*)phNfcLib_GetDataParams(PH_COMP_BAL);
+  hal = (phhalHw_Nfc_Ic_DataParams_t*)phNfcLib_GetDataParams(PH_COMP_HAL);
+  pal_iso14443p3a = (phpalI14443p3a_Sw_DataParams_t*)phNfcLib_GetDataParams(
+      PH_COMP_PAL_ISO14443P3A);
+  pal_iso14443p3b = (phpalI14443p3b_Sw_DataParams_t*)phNfcLib_GetDataParams(
+      PH_COMP_PAL_ISO14443P3B);
+  pal_iso14443p4a = (phpalI14443p4a_Sw_DataParams_t*)phNfcLib_GetDataParams(
+      PH_COMP_PAL_ISO14443P4A);
+  pal_iso14443p4 = (phpalI14443p4_Sw_DataParams_t*)phNfcLib_GetDataParams(
+      PH_COMP_PAL_ISO14443P4);
+  disc_loop = (phacDiscLoop_Sw_DataParams_t*)phNfcLib_GetDataParams(
       PH_COMP_AC_DISCLOOP);
   /* Disable blocking so that activate function will return upon every iteration
   of discovery loop */
@@ -27,297 +37,190 @@ NFCSensor::NFCSensor() {
 
 NFCSensor::~NFCSensor() { (void)phNfcLib_DeInit(); }
 
-/* This will activate, read and populate info data, then deactivate card */
-bool NFCSensor::SimpleReadInfo(NFCInfo* nfcInfo) {
-  bool success = true;
-  nfcInfo->recentlyUpdated = false;
-  uint16_t tagTechType = 0;
-  success = success && Activate();
-  // Hook into the discovery loop and pull UID/AQT(A/B)/SAK/Type from there
-  nfcLibStatus = phacDiscLoop_GetConfig(
-      pDiscLoop, PHAC_DISCLOOP_CONFIG_TECH_DETECTED, &tagTechType);
-  if (nfcLibStatus != PH_ERR_SUCCESS || tagTechType == 0) return false;
-  ExportTagInfo(pDiscLoop, tagTechType, nfcInfo);
-  success = success && Deactivate();
-  return success;
+int NFCSensor::Activate() {
+  nfc_lib_status = phNfcLib_Activate(technology_mask, &peer_info, NULL);
+  return nfc_lib_status;
 }
 
-bool NFCSensor::Activate() {
-  nfcLibStatus = phNfcLib_Activate(wTechnologyMask, &PeerInfo, NULL);
-  if (nfcLibStatus != PH_NFCLIB_STATUS_PEER_ACTIVATION_DONE) {
-    // cerr << "NFC Tag Activation Failed" << endl;
-    return false;
+int NFCSensor::Deactivate() {
+  nfc_lib_status =
+      phNfcLib_Deactivate(PH_NFCLIB_DEACTIVATION_MODE_RELEASE, &peer_info);
+  if (nfc_lib_status != PH_NFCLIB_STATUS_SUCCESS) {
+    /* NFC Tag Deactivate with Release Mode failed, card was removed
+    from vicinity...
+    Performing Deactivate with RF OFF mode */
+    phNfcLib_Deactivate(PH_NFCLIB_DEACTIVATION_MODE_RF_OFF, &peer_info);
   }
-  return true;
-}
-
-bool NFCSensor::Deactivate() {
-  nfcLibStatus =
-      phNfcLib_Deactivate(PH_NFCLIB_DEACTIVATION_MODE_RELEASE, &PeerInfo);
-  if (nfcLibStatus != PH_NFCLIB_STATUS_SUCCESS) {
-    /* cerr << "NFC Tag Deactivate with Release Mode failed, card was removed
-    from vicinity... " << endl; cerr << " Performing Deactivate with RF OFF
-    mode... " << endl; */
-    nfcLibStatus =
-        phNfcLib_Deactivate(PH_NFCLIB_DEACTIVATION_MODE_RF_OFF, &PeerInfo);
-    if (nfcLibStatus != PH_NFCLIB_STATUS_SUCCESS) return false;
-  }
-  return true;
+  return nfc_lib_status;
 }
 
 /* This will read and populate info data (Card must already have been
  * activated!)
  */
-bool NFCSensor::ReadInfo(NFCInfo* nfcInfo) {
-  nfcInfo->recentlyUpdated = false;
-  uint16_t tagTechType = 0;
+int NFCSensor::ReadInfo(NFCInfo* nfc_info) {
+  nfc_info->recently_updated = false;
+  uint16_t tag_tech_type = 0;
   // Hook into the discovery loop and pull UID/AQT(A/B)/SAK/Type from there
-  nfcLibStatus = phacDiscLoop_GetConfig(
-      pDiscLoop, PHAC_DISCLOOP_CONFIG_TECH_DETECTED, &tagTechType);
-  if (nfcLibStatus != PH_ERR_SUCCESS || tagTechType == 0) return false;
-  ExportTagInfo(pDiscLoop, tagTechType, nfcInfo);
-  return true;
+  nfc_lib_status = phacDiscLoop_GetConfig(
+      disc_loop, PHAC_DISCLOOP_CONFIG_TECH_DETECTED, &tag_tech_type);
+  if (nfc_lib_status != PH_ERR_SUCCESS || tag_tech_type == 0)
+    return -nfc_lib_status;
+  ExportTagInfo(disc_loop, tag_tech_type, nfc_info);
+  return nfc_lib_status;
+}
+
+/* This will activate, read and populate info data, then deactivate card */
+int NFCSensor::SimpleReadInfo(NFCInfo* nfc_info) {
+  nfc_info->recently_updated = false;
+  nfc_lib_status = Activate();
+  if (nfc_lib_status != PH_NFCLIB_STATUS_PEER_ACTIVATION_DONE)
+    return nfc_lib_status;
+  nfc_lib_status = ReadInfo(nfc_info);
+  // If already errored at ReadInfo then return the error from ReadInfo
+  if (nfc_lib_status < 0)
+    Deactivate();
+  else
+    nfc_lib_status = Deactivate();
+  return nfc_lib_status;
 }
 
 /* This will read a single specified page (Card must already have been
  * activated!) If card is not activated or read fails the vector will be empty.
- * pageNumber can be 0x00 - 0xFF depending upon card layout
+ * page_number can be 0x00 - 0xFF depending upon card layout
  */
-std::vector<uint8_t> NFCSensor::ReadPage(uint8_t pageNumber) {
-  std::vector<uint8_t> readBuffer;
-  switch (PeerInfo.dwActivatedType) {
-      /* Reference application for the particular tech type will divert form
-       * here */
-    case E_PH_NFCLIB_MIFARE_CLASSIC_1K:
-      // TODO: Implement
-      break;
+std::vector<uint8_t> NFCSensor::ReadPage_MFUL_NTAG(uint8_t page_number) {
+  if (peer_info.dwActivatedType != E_PH_NFCLIB_MIFARE_ULTRALIGHT)
+    return std::vector<uint8_t>();
+  nfc_lib_transmit.phNfcLib_MifareUltraLight.bPageNumber = page_number;
+  nfc_lib_transmit.phNfcLib_MifareUltraLight.bCommand = MFUL_Read;
+  nfc_lib_status = phNfcLib_Transmit(&nfc_lib_transmit, 0x0);
 
-    case E_PH_NFCLIB_MIFARE_CLASSIC_4K:
-      // TODO: Implement
-      break;
-
-    case E_PH_NFCLIB_MIFARE_ULTRALIGHT:
-      readBuffer = ReadPage_MFUL_NTAG(pageNumber);
-      break;
-
-    case E_PH_NFCLIB_MIFARE_DESFIRE:
-      // TODO: Implement
-      break;
-
-    case E_PH_NFCLIB_TYPEB_LAYER3:
-      // TODO: Implement
-      break;
-
-    case E_PH_NFCLIB_TYPEA_LAYER3:
-      /* DEBUG_PRINTF(
-          " \nType A Layer 3 card or Mifare Classic/ultralight with merged "
-          "atqa detected... \n"); */
-      // TODO: Implement
-      break;
-
-    case E_PH_NFCLIB_TYPEA_LAYER4:
-      /*       DEBUG_PRINTF(
-                " \nType A Layer 4 card or Mifare desfire with merged atqa "
-                "detected... \n");
-            nfcLibStatus = NfcLib_Layer4TypeA_Reference_app(); */
-      // TODO: Implement
-      break;
-
-    case E_PH_NFCLIB_TYPEB_LAYER4:
-      /*       DEBUG_PRINTF(" \nType B Layer 4 card detected... \n");
-            nfcLibStatus = NfcLib_TypeB_Reference_app(); */
-      // TODO: Implement
-      break;
-
-    default:
-      break;
+  if (nfc_lib_status != PH_NFCLIB_STATUS_SUCCESS) {
+    // Read for Block failed...
+    return std::vector<uint8_t>();
   }
-  return readBuffer;
+  /* This parameter has to be reset before every receive */
+  uint16_t bytes_read = 256;
+  /* To perform receive operation to get back the read data */
+  nfc_lib_status =
+      phNfcLib_Receive(&data_buffer[0], &bytes_read, &more_data_available);
+
+  /* The status should be success and the number of bytes received should be 16
+   * for MFUL/NTAG cards */
+  if ((nfc_lib_status != PH_NFCLIB_STATUS_SUCCESS) || (bytes_read != 16)) {
+    // cerr << "Read for Block " << +page_number << " failed..." << endl;
+    return std::vector<uint8_t>();
+  }
+  return std::vector<uint8_t>(data_buffer, data_buffer + 4);
 }
 
-void NFCSensor::ReadData(NFCData* nfcData) {
-  nfcData->recentlyUpdated = false;
-  // Check if card activated
-  if (PeerInfo.dwActivatedType == 0) return;
-  nfcData->reset();
-  uint8_t pageNumber = 0;
-  std::vector<uint8_t> readBuffer;
+/* page_number can be 0x00 - 0xFF depending upon card layout */
+int NFCSensor::WritePage_MFUL_NTAG(uint8_t page_number,
+                                   std::vector<uint8_t> write_data) {
+  // Check if card activated and is a MFUL or NTAG
+  if (peer_info.dwActivatedType != E_PH_NFCLIB_MIFARE_ULTRALIGHT)
+    return INCORRECT_CARD_FOR_FUNCTION;
+  nfc_lib_transmit.phNfcLib_MifareUltraLight.bPageNumber = page_number;
+  nfc_lib_transmit.phNfcLib_MifareUltraLight.pBuffer = write_data.data();
+  nfc_lib_transmit.phNfcLib_MifareUltraLight.bCommand = MFUL_Write;
+  /* Transmit will execute the command */
+  nfc_lib_status = phNfcLib_Transmit(
+      &nfc_lib_transmit, 0x04 /* For MFUL/NTAG the size of a page
+                                       to be written is 4 bytes */
+  );
+  return nfc_lib_status;
+}
+
+int NFCSensor::ReadData_MFUL_NTAG(NFCData* nfc_data) {
+  nfc_data->recently_updated = false;
+  // Check if card activated and is a MFUL or NTAG
+  if (peer_info.dwActivatedType != E_PH_NFCLIB_MIFARE_ULTRALIGHT)
+    return INCORRECT_CARD_FOR_FUNCTION;
+  nfc_data->Reset();
+  uint8_t page_number = 0;
+  std::vector<uint8_t> read_buffer;
 
   do {
-    if (!readBuffer.empty()) {
-      nfcData->readData.emplace_back(readBuffer);
-      readBuffer.clear();
+    if (!read_buffer.empty()) {
+      nfc_data->read_data.emplace_back(read_buffer);
+      read_buffer.clear();
     }
-    readBuffer = ReadPage(pageNumber);
-    pageNumber++;
-  } while (!readBuffer.empty());
-}
-
-/* pageNumber can be 0x00 - 0xFF depending upon card layout */
-bool NFCSensor::WritePage(uint8_t pageNumber, std::vector<uint8_t> writeData) {
-  bool success = false;
-  switch (PeerInfo.dwActivatedType) {
-      /* Reference application for the particular tech type will divert form
-       * here */
-    case E_PH_NFCLIB_MIFARE_CLASSIC_1K:
-      // TODO: Implement
-      break;
-
-    case E_PH_NFCLIB_MIFARE_CLASSIC_4K:
-      // TODO: Implement
-      break;
-
-    case E_PH_NFCLIB_MIFARE_ULTRALIGHT:
-      success = WritePage_MFUL_NTAG(pageNumber, writeData);
-      break;
-
-    case E_PH_NFCLIB_MIFARE_DESFIRE:
-      // TODO: Implement
-      break;
-
-    case E_PH_NFCLIB_TYPEB_LAYER3:
-      // TODO: Implement
-      break;
-
-    case E_PH_NFCLIB_TYPEA_LAYER3:
-      /* DEBUG_PRINTF(
-          " \nType A Layer 3 card or Mifare Classic/ultralight with merged "
-          "atqa detected... \n"); */
-      // TODO: Implement
-      break;
-
-    case E_PH_NFCLIB_TYPEA_LAYER4:
-      /*       DEBUG_PRINTF(
-                " \nType A Layer 4 card or Mifare desfire with merged atqa "
-                "detected... \n");
-            nfcLibStatus = NfcLib_Layer4TypeA_Reference_app(); */
-      // TODO: Implement
-      break;
-
-    case E_PH_NFCLIB_TYPEB_LAYER4:
-      /*       DEBUG_PRINTF(" \nType B Layer 4 card detected... \n");
-            nfcLibStatus = NfcLib_TypeB_Reference_app(); */
-      // TODO: Implement
-      break;
-
-    default:
-      break;
-  }
-  return success;
+    read_buffer = ReadPage_MFUL_NTAG(page_number);
+    ++page_number;
+  } while (!read_buffer.empty());
+  return PH_NFCLIB_STATUS_SUCCESS;
 }
 
 /* *********************** PRIVATE FUNCTIONS ************************ */
-void NFCSensor::ExportTagInfo(phacDiscLoop_Sw_DataParams_t* pDataParams,
-                              uint16_t tagTechnology, NFCInfo* nfcInfo) {
-  nfcInfo->reset();
-  uint8_t bTagType;
-  if (PHAC_DISCLOOP_CHECK_ANDMASK(tagTechnology,
+void NFCSensor::ExportTagInfo(phacDiscLoop_Sw_DataParams_t* disc_loop,
+                              uint16_t tag_tech_type, NFCInfo* nfc_info) {
+  nfc_info->Reset();
+  nfc_info->card_type = DescCardType(peer_info.dwActivatedType);
+  uint8_t tag_type;
+  if (PHAC_DISCLOOP_CHECK_ANDMASK(tag_tech_type,
                                   PHAC_DISCLOOP_POS_BIT_MASK_A)) {
-    nfcInfo->technology = "A";
-    uint8_t UIDsize = pDataParams->sTypeATargetInfo.aTypeA_I3P3[0].bUidSize;
-    uint8_t* UIDptr = pDataParams->sTypeATargetInfo.aTypeA_I3P3[0].aUid;
-    nfcInfo->UID = std::vector<uint8_t>(UIDptr, UIDptr + UIDsize);
-    uint8_t ATQsize = PHAC_DISCLOOP_I3P3A_MAX_ATQA_LENGTH;
-    uint8_t* ATQptr = pDataParams->sTypeATargetInfo.aTypeA_I3P3[0].aAtqa;
-    nfcInfo->ATQ = std::vector<uint8_t>(ATQptr, ATQptr + ATQsize);
-    nfcInfo->SAK = pDataParams->sTypeATargetInfo.aTypeA_I3P3[0].aSak;
-    if (pDataParams->sTypeATargetInfo.bT1TFlag) {
-      nfcInfo->type = "1";
+    nfc_info->technology = "A";
+    uint8_t UID_size = disc_loop->sTypeATargetInfo.aTypeA_I3P3[0].bUidSize;
+    uint8_t* UID_ptr = disc_loop->sTypeATargetInfo.aTypeA_I3P3[0].aUid;
+    nfc_info->UID = std::vector<uint8_t>(UID_ptr, UID_ptr + UID_size);
+    uint8_t ATQ_size = PHAC_DISCLOOP_I3P3A_MAX_ATQA_LENGTH;
+    uint8_t* ATQ_ptr = disc_loop->sTypeATargetInfo.aTypeA_I3P3[0].aAtqa;
+    nfc_info->ATQ = std::vector<uint8_t>(ATQ_ptr, ATQ_ptr + ATQ_size);
+    nfc_info->SAK = disc_loop->sTypeATargetInfo.aTypeA_I3P3[0].aSak;
+    if (disc_loop->sTypeATargetInfo.bT1TFlag) {
+      nfc_info->type = "1";
     } else {
-      bTagType = (pDataParams->sTypeATargetInfo.aTypeA_I3P3[0].aSak & 0x60);
-      bTagType = bTagType >> 5;
-      switch (bTagType) {
+      tag_type = (disc_loop->sTypeATargetInfo.aTypeA_I3P3[0].aSak & 0x60);
+      tag_type = tag_type >> 5;
+      switch (tag_type) {
         case PHAC_DISCLOOP_TYPEA_TYPE2_TAG_CONFIG_MASK:
-          nfcInfo->type = "2";
+          nfc_info->type = "2";
           break;
         case PHAC_DISCLOOP_TYPEA_TYPE4A_TAG_CONFIG_MASK:
-          nfcInfo->type = "4A";
+          nfc_info->type = "4A";
           break;
         case PHAC_DISCLOOP_TYPEA_TYPE_NFC_DEP_TAG_CONFIG_MASK:
-          nfcInfo->type = "P2P";
+          nfc_info->type = "P2P";
           break;
         case PHAC_DISCLOOP_TYPEA_TYPE_NFC_DEP_TYPE4A_TAG_CONFIG_MASK:
-          nfcInfo->type = "NFC_DEP & 4A";
+          nfc_info->type = "NFC_DEP & 4A";
           break;
         default:
           break;
       }
     }
   }
-  if (PHAC_DISCLOOP_CHECK_ANDMASK(tagTechnology,
+  if (PHAC_DISCLOOP_CHECK_ANDMASK(tag_tech_type,
                                   PHAC_DISCLOOP_POS_BIT_MASK_B)) {
-    nfcInfo->technology = "B";
+    nfc_info->technology = "B";
     /* PUPI Length is always 4 bytes */
-    uint8_t UIDsize = 0x04;
-    uint8_t* UIDptr = pDataParams->sTypeBTargetInfo.aTypeB_I3P3[0].aPupi;
-    nfcInfo->UID = std::vector<uint8_t>(UIDptr, UIDptr + UIDsize);
-    uint8_t ATQsize = pDataParams->sTypeBTargetInfo.aTypeB_I3P3[0].bAtqBLength;
-    uint8_t* ATQptr = pDataParams->sTypeBTargetInfo.aTypeB_I3P3[0].aAtqB;
-    nfcInfo->ATQ = std::vector<uint8_t>(ATQptr, ATQptr + ATQsize);
+    uint8_t UID_size = 0x04;
+    uint8_t* UID_ptr = disc_loop->sTypeBTargetInfo.aTypeB_I3P3[0].aPupi;
+    nfc_info->UID = std::vector<uint8_t>(UID_ptr, UID_ptr + UID_size);
+    uint8_t ATQ_size = disc_loop->sTypeBTargetInfo.aTypeB_I3P3[0].bAtqBLength;
+    uint8_t* ATQ_ptr = disc_loop->sTypeBTargetInfo.aTypeB_I3P3[0].aAtqB;
+    nfc_info->ATQ = std::vector<uint8_t>(ATQ_ptr, ATQ_ptr + ATQ_size);
   }
-  if (PHAC_DISCLOOP_CHECK_ANDMASK(tagTechnology,
+  if (PHAC_DISCLOOP_CHECK_ANDMASK(tag_tech_type,
                                   PHAC_DISCLOOP_POS_BIT_MASK_F212) ||
-      PHAC_DISCLOOP_CHECK_ANDMASK(tagTechnology,
+      PHAC_DISCLOOP_CHECK_ANDMASK(tag_tech_type,
                                   PHAC_DISCLOOP_POS_BIT_MASK_F424)) {
-    nfcInfo->technology = "F";
-    uint8_t UIDsize = PHAC_DISCLOOP_FELICA_IDM_LENGTH;
-    uint8_t* UIDptr = pDataParams->sTypeFTargetInfo.aTypeFTag[0].aIDmPMm;
-    nfcInfo->UID = std::vector<uint8_t>(UIDptr, UIDptr + UIDsize);
-    if ((pDataParams->sTypeFTargetInfo.aTypeFTag[0].aIDmPMm[0] == 0x01) &&
-        (pDataParams->sTypeFTargetInfo.aTypeFTag[0].aIDmPMm[1] == 0xFE)) {
-      nfcInfo->type = "P2P";
+    nfc_info->technology = "F";
+    uint8_t UID_size = PHAC_DISCLOOP_FELICA_IDM_LENGTH;
+    uint8_t* UID_ptr = disc_loop->sTypeFTargetInfo.aTypeFTag[0].aIDmPMm;
+    nfc_info->UID = std::vector<uint8_t>(UID_ptr, UID_ptr + UID_size);
+    if ((disc_loop->sTypeFTargetInfo.aTypeFTag[0].aIDmPMm[0] == 0x01) &&
+        (disc_loop->sTypeFTargetInfo.aTypeFTag[0].aIDmPMm[1] == 0xFE)) {
+      nfc_info->type = "P2P";
     } else {
-      nfcInfo->type = "3";
+      nfc_info->type = "3";
     }
-    if (pDataParams->sTypeFTargetInfo.aTypeFTag[0].bBaud !=
+    if (disc_loop->sTypeFTargetInfo.aTypeFTag[0].bBaud !=
         PHAC_DISCLOOP_CON_BITR_212) {
-      nfcInfo->bitRate = 424;
+      nfc_info->bit_rate = 424;
     } else {
-      nfcInfo->bitRate = 212;
+      nfc_info->bit_rate = 212;
     }
   }
-}
-
-std::vector<uint8_t> NFCSensor::ReadPage_MFUL_NTAG(uint8_t pageNumber) {
-  phNfcLib_TransmitInput.phNfcLib_MifareUltraLight.bPageNumber = pageNumber;
-  phNfcLib_TransmitInput.phNfcLib_MifareUltraLight.bCommand = MFUL_Read;
-  nfcLibStatus = phNfcLib_Transmit(&phNfcLib_TransmitInput, 0x0);
-
-  if (nfcLibStatus != PH_NFCLIB_STATUS_SUCCESS) {
-    // cerr << "Read for Block " << +pageNumber << " failed..." << endl;
-    return std::vector<uint8_t>();
-  }
-  /* This parameter has to be reset before every receive */
-  uint16_t bytesRead = 256;
-  /* To perform receive operation to get back the read data */
-  nfcLibStatus =
-      phNfcLib_Receive(&bDataBuffer[0], &bytesRead, &bMoreDataAvailable);
-
-  /* The status should be success and the number of bytes received should be 16
-   * for MFUL/NTAG cards */
-  if ((nfcLibStatus != PH_NFCLIB_STATUS_SUCCESS) || (bytesRead != 16)) {
-    // cerr << "Read for Block " << +pageNumber << " failed..." << endl;
-    return std::vector<uint8_t>();
-  }
-  return std::vector<uint8_t>(bDataBuffer, bDataBuffer + 4);
-}
-
-bool NFCSensor::WritePage_MFUL_NTAG(uint8_t pageNumber,
-                                    std::vector<uint8_t> writeData) {
-  phNfcLib_TransmitInput.phNfcLib_MifareUltraLight.bPageNumber = pageNumber;
-  phNfcLib_TransmitInput.phNfcLib_MifareUltraLight.pBuffer = writeData.data();
-  phNfcLib_TransmitInput.phNfcLib_MifareUltraLight.bCommand = MFUL_Write;
-  /* Transmit will execute the command */
-  nfcLibStatus = phNfcLib_Transmit(
-      &phNfcLib_TransmitInput, 0x04 /* For MFUL/NTAG the size of a page
-                                       to be written is 4 bytes */
-  );
-
-  /* The status should be success, if not break from the application */
-  if (nfcLibStatus != PH_NFCLIB_STATUS_SUCCESS) {
-    // cerr << "Write to Block " << +pageNumber << " failed..." << endl;
-    return false;
-  }
-  return true;
 }
 }  // namespace matrix_hal

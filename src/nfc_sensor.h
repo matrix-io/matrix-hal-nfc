@@ -9,14 +9,18 @@
 
 #include "nfc_data.h"
 #include "nfc_info.h"
+#include "nfc_types.h"
+
+// Begin NXP Defines
+#define DATA_BUFFER_LEN 260
+// These two are specifically for the Simplified NXP Lib
+#define SIMPLIFIED_ISO_PRIO 0
+#define SIMPLIFIED_ISO_STACK 0x20000
+// END NXP Defines
 
 extern "C" {
-// This MUST be included last!
-#include <matrix_nfc/nxp_nfc/NxpNfcRdLib/intfs/phNfcLib.h>
-#include <matrix_nfc/nxp_nfc/NxpNfcRdLib/types/ph_Status.h>
-
 // Begin Variable Setup for NXP HAL
-#define DATA_BUFFER_LEN 260            /* Buffer length */
+// Do not change variable names in this section
 uint8_t bHalBufferTx[DATA_BUFFER_LEN]; /* HAL TX buffer. Size 260 - Based on
                                           maximum FSL */
 uint8_t bHalBufferRx[DATA_BUFFER_LEN]; /* HAL RX buffer. Size 260 - Based on
@@ -41,37 +45,40 @@ uint16_t wAppHCEBuffSize = sizeof(aAppHCEBuf);
 namespace matrix_hal {
 class NFCSensor {
  public:
-// Begin Variable Setup for Simplified NXP Lib
-#define SIMPLIFIED_ISO_PRIO 0
-#define SIMPLIFIED_ISO_STACK 0x20000
-  uint32_t nfcLibStatus = 0;
-  uint16_t wTechnologyMask = 0x1B;
-  uint8_t bMoreDataAvailable = 0;
-  uint16_t wNumberofBytes = DATA_BUFFER_LEN;
-  phNfcLib_Transmit_t phNfcLib_TransmitInput;
-  phNfcLib_PeerInfo_t PeerInfo = {0};
-  uint8_t bDataBuffer[DATA_BUFFER_LEN]; /* universal data buffer */
+  // Begin Variable Setup for Simplified NXP Lib
+  uint32_t nfc_lib_status = 0;
+  uint16_t technology_mask = 0x1B;
+  uint8_t more_data_available = 0;
+  phNfcLib_Transmit_t nfc_lib_transmit;
+  phNfcLib_PeerInfo_t peer_info = {0};
+  uint8_t data_buffer[DATA_BUFFER_LEN];  // universal data buffer
   // End Variable Setup for Simplified NXP Lib
   // NXP Lib Component pointers
-  phacDiscLoop_Sw_DataParams_t *pDiscLoop;
-  // Begin Public User Functions
+  phbalReg_Type_t* bal;              // Bus Abstraction Layer component
+  phhalHw_Nfc_Ic_DataParams_t* hal;  // Hardware Abstraction Layer component
+  phpalI14443p3a_Sw_DataParams_t*
+      pal_iso14443p3a;  // PAL ISO I14443-A component
+  phpalI14443p3b_Sw_DataParams_t*
+      pal_iso14443p3b;  // PAL ISO I14443-B component
+  phpalI14443p4a_Sw_DataParams_t*
+      pal_iso14443p4a;                            // PAL ISO I14443-4A component
+  phpalI14443p4_Sw_DataParams_t* pal_iso14443p4;  // PAL ISO I14443-4 component
+  phacDiscLoop_Sw_DataParams_t* disc_loop;        // Discovery loop component
+  // Begin User Functions
   NFCSensor();
   ~NFCSensor();
-  bool SimpleReadInfo(NFCInfo *nfcInfo);
-  bool Activate();  // Activates Card
-  bool Deactivate();
-  bool ReadInfo(NFCInfo *nfcInfo);
-  std::vector<uint8_t> ReadPage(uint8_t pageNumber);
-  void ReadData(NFCData *nfcData);
-  bool WritePage(uint8_t pageNumber, std::vector<uint8_t> writeData);
-  // End Public User Functions
- private:
-  // Begin Private Helper Functions
-  void ExportTagInfo(phacDiscLoop_Sw_DataParams_t *pDataParams,
-                     uint16_t tagTechnology, NFCInfo *nfcInfo);
-  std::vector<uint8_t> ReadPage_MFUL_NTAG(uint8_t pageNumber);
-  bool WritePage_MFUL_NTAG(uint8_t pageNumber, std::vector<uint8_t> data);
-  // End Private Helper Functions
+  int Activate();
+  int Deactivate();
+  int ReadInfo(NFCInfo* nfc_info);
+  int SimpleReadInfo(NFCInfo* nfc_info);
+  std::vector<uint8_t> ReadPage_MFUL_NTAG(uint8_t page_number);
+  int WritePage_MFUL_NTAG(uint8_t page_number, std::vector<uint8_t> write_data);
+  int ReadData_MFUL_NTAG(NFCData* nfc_data);
+  // End User Functions
+  // Begin Helper Functions
+  void ExportTagInfo(phacDiscLoop_Sw_DataParams_t* disc_loop,
+                     uint16_t tag_tech_type, NFCInfo* nfc_info);
+  // End Helper Functions
 };
 
 }  // namespace matrix_hal

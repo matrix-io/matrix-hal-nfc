@@ -33,10 +33,10 @@ int main() {
   // Get switch UID
   std::cout << "Scan ON/OFF Tag" << std::endl;
   while (true) {
-    if (nfc_info.recentlyUpdated) break;
+    if (nfc_info.recently_updated) break;
     nfc_sensor.SimpleReadInfo(&nfc_info);
   }
-  switchUID = nfc_info.strHexUID();
+  switchUID = nfc_info.StrHexUID();
 
   std::cout << "ON/OFF Tag Scanned!" << std::endl;
 
@@ -50,8 +50,8 @@ int main() {
     auto diff = end - start;
     cout << chrono::duration<double, milli>(diff).count() << " ms" << endl;
 
-    if (nfc_info.recentlyUpdated) {
-      std::string currUID = nfc_info.strHexUID();
+    if (nfc_info.recently_updated) {
+      std::string currUID = nfc_info.StrHexUID();
       if (switchUID == currUID) {
         for (matrix_hal::LedValue &led : everloop_image.leds) {
           // Sine waves 120 degrees out of phase for rainbow

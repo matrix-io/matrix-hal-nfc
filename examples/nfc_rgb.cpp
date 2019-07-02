@@ -12,9 +12,9 @@
 namespace hal = matrix_hal;
 
 int main() {
-  std::string greenUID = "";
-  std::string blueUID = "";
-  std::string redUID = "";
+  std::string green_UID = "";
+  std::string blue_UID = "";
+  std::string red_UID = "";
 
   hal::MatrixIOBus bus;
 
@@ -32,57 +32,57 @@ int main() {
   // Get red UID
   std::cout << "Scan Red Tag" << std::endl;
   while (true) {
-    if (nfc_info.recentlyUpdated) break;
+    if (nfc_info.recently_updated) break;
     nfc_sensor.SimpleReadInfo(&nfc_info);
   }
-  redUID = nfc_info.strHexUID();
+  red_UID = nfc_info.StrHexUID();
 
-  nfc_info.recentlyUpdated = false;
+  nfc_info.recently_updated = false;
 
   // Get green UID
   std::cout << "Scan Green Tag" << std::endl;
   while (true) {
-    if (nfc_info.recentlyUpdated && nfc_info.strHexUID() != redUID) break;
+    if (nfc_info.recently_updated && nfc_info.StrHexUID() != red_UID) break;
     nfc_sensor.SimpleReadInfo(&nfc_info);
   }
-  greenUID = nfc_info.strHexUID();
+  green_UID = nfc_info.StrHexUID();
 
-  nfc_info.recentlyUpdated = false;
+  nfc_info.recently_updated = false;
 
   // Get blue UID
   std::cout << "Scan Blue Tag" << std::endl;
   while (true) {
-    if (nfc_info.recentlyUpdated && nfc_info.strHexUID() != redUID &&
-        nfc_info.strHexUID() != greenUID)
+    if (nfc_info.recently_updated && nfc_info.StrHexUID() != red_UID &&
+        nfc_info.StrHexUID() != green_UID)
       break;
     nfc_sensor.SimpleReadInfo(&nfc_info);
   }
-  blueUID = nfc_info.strHexUID();
+  blue_UID = nfc_info.StrHexUID();
 
-  nfc_info.recentlyUpdated = false;
+  nfc_info.recently_updated = false;
 
   std::cout << "\nScan specified tags to activate Everloop" << std::endl;
 
   do {
     nfc_sensor.SimpleReadInfo(&nfc_info);
 
-    if (nfc_info.recentlyUpdated) {
-      std::string currUID = nfc_info.strHexUID();
-      if (redUID == currUID) {
+    if (nfc_info.recently_updated) {
+      std::string curr_UID = nfc_info.StrHexUID();
+      if (red_UID == curr_UID) {
         for (hal::LedValue &led : everloop_image.leds) {
           led.red = 50;
           led.green = 0;
           led.blue = 0;
           led.white = 0;
         }
-      } else if (greenUID == currUID) {
+      } else if (green_UID == curr_UID) {
         for (hal::LedValue &led : everloop_image.leds) {
           led.red = 0;
           led.green = 50;
           led.blue = 0;
           led.white = 0;
         }
-      } else if (blueUID == currUID) {
+      } else if (blue_UID == curr_UID) {
         for (hal::LedValue &led : everloop_image.leds) {
           led.red = 0;
           led.green = 0;

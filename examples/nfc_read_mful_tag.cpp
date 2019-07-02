@@ -33,15 +33,15 @@ int main() {
   hal::NFCSensor nfc_sensor;
   hal::NFCData nfc_data;
 
-  cout << "Scan a Tag, Any Tag!" << endl;
+  cout << "Scan a Mifare Ultralight or NTAG" << endl;
 
   do {
     nfc_sensor.Activate();
-    nfc_sensor.ReadData(&nfc_data);
-    bool readFinish = nfc_sensor.Deactivate();
+    nfc_sensor.ReadData_MFUL_NTAG(&nfc_data);
+    nfc_sensor.Deactivate();
 
-    if (nfc_data.recentlyUpdated && readFinish) {
-      cout << nfc_data.strHex() << endl << endl;
+    if (nfc_data.recently_updated) {
+      cout << nfc_data.StrHex() << endl << endl;
       for (hal::LedValue &led : everloop_image.leds) {
         led.red = 0;
         led.green = 20;

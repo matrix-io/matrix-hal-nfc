@@ -11,27 +11,29 @@
 namespace matrix_hal {
 class NFCInfo {
  public:
-  bool recentlyUpdated = false;
+  bool recently_updated = false;
   std::vector<uint8_t> UID;
   std::vector<uint8_t> ATQ;
   int SAK = -1;
-  int bitRate = -1;
+  int bit_rate = -1;
   std::string technology = "null";
   std::string type = "null";
+  std::string card_type = "null";
 
   // HELPER FUNCTIONS
-  void reset() {
+  void Reset() {
     // Reset parameters before populaing with info from new object
-    recentlyUpdated = true;
+    recently_updated = true;
     UID.clear();
     ATQ.clear();
     SAK = -1;
-    bitRate = -1;
+    bit_rate = -1;
     technology = "null";
     type = "null";
+    card_type = "null";
   }
 
-  std::string strHexUID() {
+  std::string StrHexUID() {
     if (UID.empty()) return "null";
     std::stringstream ret;
     ret << "0x";
@@ -43,7 +45,7 @@ class NFCInfo {
     return ret.str();
   }
 
-  std::string strHexATQ() {
+  std::string StrHexATQ() {
     if (ATQ.empty()) return "null";
     std::stringstream ret;
     ret << "0x";
@@ -55,7 +57,7 @@ class NFCInfo {
     return ret.str();
   }
 
-  std::string strHexSAK() {
+  std::string StrHexSAK() {
     if (SAK == -1) return "null";
     std::stringstream ret;
     ret << "0x" << std::setfill('0') << std::setw(2) << std::hex
@@ -63,13 +65,14 @@ class NFCInfo {
     return ret.str();
   }
 
-  std::string str() {
+  std::string Str() {
     std::stringstream ret;
     ret << "Technology : " << technology << std::endl;
-    ret << "UID : " << strHexUID() << std::endl;
-    ret << "ATQ(A/B) : " << strHexATQ() << std::endl;
-    ret << "SAK : " << strHexSAK() << std::endl;
-    ret << "Type : " << type << std::flush;
+    ret << "Type : " << type << std::endl;
+    ret << "UID : " << StrHexUID() << std::endl;
+    ret << "ATQ(A/B) : " << StrHexATQ() << std::endl;
+    ret << "SAK : " << StrHexSAK() << std::endl;
+    ret << "Card Type : " << card_type << std::flush;
     return ret.str();
   }
 };

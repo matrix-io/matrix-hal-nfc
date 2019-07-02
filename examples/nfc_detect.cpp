@@ -33,8 +33,8 @@ int main() {
   do {
     nfc_sensor.SimpleReadInfo(&nfc_info);
 
-    if (nfc_info.recentlyUpdated) {
-      cout << nfc_info.str() << endl << endl;
+    if (nfc_info.recently_updated) {
+      cout << nfc_info.Str() << endl << endl;
       for (hal::LedValue &led : everloop_image.leds) {
         led.red = 0;
         led.green = 20;
