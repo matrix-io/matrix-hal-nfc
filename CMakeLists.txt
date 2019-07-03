@@ -1,10 +1,13 @@
 # This build file is for matrix-hal-nfc, it integrates with the NXP NFC Reader Library
 cmake_minimum_required(VERSION 2.8)
+set(CMAKE_CXX_STANDARD 11)
 
-project(matrix-hal-nfc C CXX)
+project(matrix_hal_nfc C CXX)
 
 # NXP Lib requires this
 option(PLATFORM_RaspberryPi  "Platform is RaspberryPi"                                ON)
+
+add_definitions(-Wall)
 
 # NXP Lib requires this
 if(${PLATFORM_RaspberryPi})
@@ -22,20 +25,20 @@ include_directories(
 # Compile NXP lib
 add_subdirectory(/usr/local/include/matrix_nfc/nxp_nfc/NxpNfcRdLib nxp_lib)
 
-add_definitions(-std=c++11 -fpermissive)
-
 # Include header files needed for compiling matrix-hal-nfc 
 include_directories(
     ./src/
     # NXP Library Init
-    /usr/local/include/matrix_nfc/nxp_nfc/NfcrdlibEx2_AdvancedDiscoveryLoop/intfs
+    /usr/local/include/matrix_nfc/nxp_nfc/Nfcrdlib_SimplifiedAPI_ISO/intfs
+    /usr/local/include/matrix_nfc/nxp_nfc/NfcrdlibEx3_NFCForum/intfs/
 )
 
-set(nxp_init "/usr/local/include/matrix_nfc/nxp_nfc/NfcrdlibEx2_AdvancedDiscoveryLoop/src/phApp_Init.c")
+set(nxp_init "/usr/local/include/matrix_nfc/nxp_nfc/NfcrdlibEx3_NFCForum/src/phApp_Init.c")
+set(nxp_cards "/usr/local/include/matrix_nfc/nxp_nfc/NfcrdlibEx3_NFCForum/src/cards.c")
 
 set(matrix_hal_nfc_headers
-./src/nfc_abstraction.h
 ./src/nfc_data.h
+./src/nfc_info.h
 ./src/nfc_sensor.h
 )
 
@@ -51,7 +54,7 @@ find_library(CRYPT_LIB NAMES crypt)
 find_library(GFLAGS_LIB NAMES gflags)
 message(STATUS "gflags found =>" "${GFLAGS_LIB}")
 
-add_library(matrix_hal_nfc SHARED ${nxp_init} ${matrix_hal_nfc_src})
+add_library(matrix_hal_nfc SHARED ${nxp_init} ${nxp_cards} ${matrix_hal_nfc_src})
 set_property(TARGET matrix_hal_nfc PROPERTY CXX_STANDARD 11)
 
 target_link_libraries(
@@ -86,12 +89,13 @@ target_link_libraries(
     NxpRdLib_palI18092mT
     NxpRdLib_ceT4T
     NxpRdLib_palEpcUid
+    NxpRdLib_phTools
+    NxpRdLib_palI18092mT
+    NxpRdLib_npSnep
+    NxpRdLib_phNfcLib
     ${CMAKE_THREAD_LIBS_INIT}
 )
 
 install(TARGETS matrix_hal_nfc DESTINATION lib)
 
 install(FILES ${matrix_hal_nfc_headers} DESTINATION include/matrix_nfc)
-
-# Compile Examples
-add_subdirectory(examples examples)
