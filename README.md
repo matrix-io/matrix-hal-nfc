@@ -30,7 +30,7 @@ Click the `4.04.05 NFC Reader Library for PN512`.
 
 <img width=550 src="images/pn512_library.png"/>
 
-Then click `NFC Reader Library v4.040.05 R2 for PNEV512B including all software examples` to finally download the library. A zip file called SW297940.zip should begin downloading.
+Then click `SW297940.zip` to download `NFC Reader Library v4.040.05 R2 for PNEV512B including all software examples`.
 
 <img width=550 src="images/pn512_zip.png"/>
 
