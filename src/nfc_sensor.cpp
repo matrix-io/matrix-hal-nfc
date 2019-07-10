@@ -18,6 +18,7 @@ NFCSensor::NFCSensor() {
   if (nfc_lib_status != PH_NFCLIB_STATUS_SUCCESS) {
     throw "NFC Sensor Init Failed";
   }
+  // Get pointer to all components initialized by Simplified Lib
   bal = (phbalReg_Type_t *)phNfcLib_GetDataParams(PH_COMP_BAL);
   hal = (phhalHw_Nfc_Ic_DataParams_t *)phNfcLib_GetDataParams(PH_COMP_HAL);
   pal_iso14443p3a = (phpalI14443p3a_Sw_DataParams_t *)phNfcLib_GetDataParams(
@@ -30,6 +31,31 @@ NFCSensor::NFCSensor() {
       PH_COMP_PAL_ISO14443P4);
   disc_loop = (phacDiscLoop_Sw_DataParams_t *)phNfcLib_GetDataParams(
       PH_COMP_AC_DISCLOOP);
+  // Initialize additional components
+  nfc_lib_status = phalT1T_Sw_Init(&al_T1T, sizeof(phalT1T_Sw_DataParams_t),
+                                   pal_iso14443p3a);
+  nfc_lib_status =
+      phpalMifare_Sw_Init(&spalMifare, sizeof(phpalMifare_Sw_DataParams_t),
+                          &hal->sHal, pal_iso14443p4);
+  nfc_lib_status = phalMful_Sw_Init(&salMFUL, sizeof(phalMful_Sw_DataParams_t),
+                                    &spalMifare, NULL, NULL, NULL);
+  nfc_lib_status = phalMfdf_Sw_Init(&salMFDF, sizeof(phalMfdf_Sw_DataParams_t),
+                                    &spalMifare, NULL, NULL, NULL, &hal->sHal);
+  nfc_lib_status = phpalFelica_Sw_Init(
+      &spalFelica, sizeof(phpalFelica_Sw_DataParams_t), &hal->sHal);
+  nfc_lib_status = phalFelica_Sw_Init(
+      &salFelica, sizeof(phalFelica_Sw_DataParams_t), &spalFelica);
+  nfc_lib_status =
+      phalTop_Sw_Init(&tag_operation, sizeof(phalTop_Sw_DataParams_t), &al_T1T,
+                      &salMFUL, &salFelica, &salMFDF, NULL);
+  // Pass additional components into discovery loop
+  disc_loop->pHalDataParams = &hal->sHal;
+  disc_loop->pPal1443p3aDataParams = pal_iso14443p3a;
+  disc_loop->pPal1443p3bDataParams = pal_iso14443p3b;
+  disc_loop->pPal1443p4aDataParams = pal_iso14443p4a;
+  disc_loop->pPal14443p4DataParams = pal_iso14443p4;
+  disc_loop->pPalFelicaDataParams = &spalFelica;
+  disc_loop->pAlT1TDataParams = &al_T1T;
   /* Disable blocking so that activate function will return upon every iteration
   of discovery loop */
   phNfcLib_SetConfig_Value(PH_NFCLIB_CONFIG_ACTIVATION_BLOCKING, PH_OFF);
@@ -152,6 +178,79 @@ int NFCSensor::ReadData_MFUL_NTAG(NFCData *nfc_data) {
 }
 
 /* *********************** PRIVATE FUNCTIONS ************************ */
+
+void NFCSensor::DumpBuffer(uint8_t *pBuffer, uint32_t dwBufferLength) {
+  uint32_t i;
+  uint8_t aTempBuffer[17] = {0};
+
+  /* Debug print is not enabled in Release Mode. Required only for release mode.
+   */
+  // PH_UNUSED_VARIABLE(aTempBuffer[0]);
+
+  for (i = 0; i < dwBufferLength; i++) {
+    if ((i % 16) == 0) {
+      if (i != 0) {
+        printf("  |%s|\n", aTempBuffer);
+      }
+
+      printf("\t\t[%04X] ", i);
+    }
+
+    printf(" %02X", pBuffer[i]);
+
+    if ((pBuffer[i] < 0x20) || (pBuffer[i] > 0x7e)) {
+      aTempBuffer[i % 16] = '.';
+    } else {
+      aTempBuffer[i % 16] = pBuffer[i];
+    }
+
+    aTempBuffer[16] = 0;
+  }
+
+  while ((i % 16) != 0) {
+    printf("   ");
+    aTempBuffer[((i++) % 16)] = ' ';
+  }
+
+  printf("  |%s|\n", aTempBuffer);
+}
+
+int NFCSensor::ReadNdefMessage(uint8_t tag_tech_type) {
+  phStatus_t status;
+  uint8_t bTagState;
+  uint16_t wDataLength = 0;
+
+  /* Configure Top layer for specified tag type */
+  status = phalTop_SetConfig(&tag_operation, PHAL_TOP_CONFIG_TAG_TYPE,
+                             tag_tech_type);
+  // DEBUG_ERROR_PRINT(status);
+
+  /* Check for NDEF presence */
+  status = phalTop_CheckNdef(&tag_operation, &bTagState);
+  // DEBUG_ERROR_PRINT(status);
+
+  if ((bTagState == PHAL_TOP_STATE_READONLY) ||
+      (bTagState == PHAL_TOP_STATE_READWRITE)) {
+    /* Read NDEF message */
+    status = phalTop_ReadNdef(&tag_operation, data_buffer, &wDataLength);
+    // DEBUG_ERROR_PRINT(status);
+    cout << wDataLength << endl;
+    /* Print NDEF message, if not NULL NDEF */
+    if (wDataLength) {
+      printf("\tNDEF detected...\n");
+      printf("\tNDEF length: %d\n", wDataLength);
+      printf("\tNDEF message:\n");
+      DumpBuffer(data_buffer, wDataLength);
+    } else {
+      printf("\tNDEF content is NULL...\n");
+    }
+  } else {
+    printf("\tNo NDEF content detected...\n");
+  }
+
+  return status;
+}
+// TODO: Make NDEF Read work with all tags
 void NFCSensor::ExportTagInfo(phacDiscLoop_Sw_DataParams_t *disc_loop,
                               uint16_t tag_tech_type, NFCInfo *nfc_info) {
   nfc_info->Reset();
@@ -175,6 +274,7 @@ void NFCSensor::ExportTagInfo(phacDiscLoop_Sw_DataParams_t *disc_loop,
       switch (tag_type) {
         case PHAC_DISCLOOP_TYPEA_TYPE2_TAG_CONFIG_MASK:
           nfc_info->type = "2";
+          ReadNdefMessage(PHAL_TOP_TAG_TYPE_T2T_TAG);
           break;
         case PHAC_DISCLOOP_TYPEA_TYPE4A_TAG_CONFIG_MASK:
           nfc_info->type = "4A";

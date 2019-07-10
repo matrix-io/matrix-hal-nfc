@@ -53,7 +53,7 @@ class NFCSensor {
   phNfcLib_PeerInfo_t peer_info = {0};
   uint8_t data_buffer[DATA_BUFFER_LEN];  // universal data buffer
   // End Variable Setup for Simplified NXP Lib
-  // NXP Lib Component pointers
+  // NXP Simplified Lib Component pointers
   phbalReg_Type_t* bal;              // Bus Abstraction Layer component
   phhalHw_Nfc_Ic_DataParams_t* hal;  // Hardware Abstraction Layer component
   phpalI14443p3a_Sw_DataParams_t*
@@ -64,6 +64,15 @@ class NFCSensor {
       pal_iso14443p4a;                            // PAL ISO I14443-4A component
   phpalI14443p4_Sw_DataParams_t* pal_iso14443p4;  // PAL ISO I14443-4 component
   phacDiscLoop_Sw_DataParams_t* disc_loop;        // Discovery loop component
+  // NFC Standard Lib Components
+  phalTop_Sw_DataParams_t tag_operation;
+  phalT1T_Sw_DataParams_t al_T1T;          // done
+  phpalMifare_Sw_DataParams_t spalMifare;  // Required by salMFUL and salMFDF
+  phalMful_Sw_DataParams_t salMFUL;        // done
+  phalMfdf_Sw_DataParams_t salMFDF;        // done
+  phpalFelica_Sw_DataParams_t spalFelica;  // Required by salFelica
+  phalFelica_Sw_DataParams_t salFelica;    // done
+
   // Begin User Functions
   NFCSensor();
   ~NFCSensor();
@@ -77,6 +86,8 @@ class NFCSensor {
   int ReadData_MFUL_NTAG(NFCData* nfc_data);
   // End User Functions
   // Begin Helper Functions
+  void DumpBuffer(uint8_t* pBuffer, uint32_t dwBufferLength);
+  int ReadNdefMessage(uint8_t tag_tech_type);
   void ExportTagInfo(phacDiscLoop_Sw_DataParams_t* disc_loop,
                      uint16_t tag_tech_type, NFCInfo* nfc_info);
   // End Helper Functions

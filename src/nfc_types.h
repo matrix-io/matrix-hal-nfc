@@ -8,6 +8,10 @@
 extern "C" {
 // This MUST be included last!
 #include <matrix_nfc/nxp_nfc/NxpNfcRdLib/intfs/phNfcLib.h>
+// TODO: Refine include statemnets
+#include <matrix_nfc/nxp_nfc/NxpNfcRdLib/intfs/phalFelica.h>
+#include <matrix_nfc/nxp_nfc/NxpNfcRdLib/intfs/phalTop.h>
+#include <matrix_nfc/nxp_nfc/NxpNfcRdLib/intfs/phpalFelica.h>
 #include <matrix_nfc/nxp_nfc/NxpNfcRdLib/types/ph_Status.h>
 }
 
