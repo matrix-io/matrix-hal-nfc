@@ -24,15 +24,15 @@ You can download the **NFC Reader Library for PN512** by creating an account on 
 
 Click the download button.
 
-![](images/nxp_download_link.png)
+<img width=550 src="images/nxp_download_link.png"/>
 
 Click the `4.04.05 NFC Reader Library for PN512`.
 
-![](images/pn512_library.png)
+<img width=550 src="images/pn512_library.png"/>
 
 Then click `NFC Reader Library v4.040.05 R2 for PNEV512B including all software examples` to finally download the library. A zip file called SW297940.zip should begin downloading.
 
-![](images/pn512_zip.png)
+<img width=550 src="images/pn512_zip.png"/>
 
 ## Install MATRIX HAL NXP
 
