@@ -15,6 +15,11 @@ Before moving on, be sure to have
 [MATRIX HAL](https://matrix-io.github.io/matrix-documentation/matrix-hal/getting-started/installation-package/) 
 installed (HAL is needed for LEDs & matrix-creator-init).
 
+Download the following packages to your Raspberry Pi.
+```
+sudo apt install cmake git
+```
+
 
 ## Download The NXP Library
 > Due to NXP's terms & conditions, we cannot directly distribute the library to our users.
@@ -50,8 +55,12 @@ Once complete, you can apply our MATRIX Creator config patch and install the lib
 unzip SW297940.zip -d nxp_nfc && patch < creator_nfc_pins.patch ./nxp_nfc/NxpNfcRdLib/intfs/phPlatform_Port_Pi_RC523.h && sudo mkdir -p /usr/local/include/matrix_nfc/nxp_nfc/ && sudo cp -r nxp_nfc/ /usr/local/include/matrix_nfc/ && sudo chmod 755 -R /usr/local/include/matrix_nfc/ && sudo rm -r nxp_nfc
 ```
 
+Inside matrix-hal-nxp, you need to run the build script to finish the library installation. This will install the header files in `/usr/local/include/matrix_nfc/` and the libmatrix_hal_nfc.so library file in `/usr/local/lib/`.
+
+```
+./build.sh
+```
+
 ## Running The NFC Examples
 
-In the root directory of this repository there is a rebuild.sh file. This will run cmake and make, and also install the needed headers in `/usr/local/include/matrix_nfc/` and the libmatrix_hal_nfc.so library file in `/usr/local/lib/`.
-
-After building is complete, the compiled nfc_read example will be in the build folder.
+After building is complete, a few compiled examples will be in the `build/examples` folder.
