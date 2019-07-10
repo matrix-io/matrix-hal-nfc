@@ -2,53 +2,56 @@
 
 matrix-hal-nfc is a simple, easy to use wrapper for using NXP's NFC Reader Library with the PN512 chip on the [MATRIX Creator](https://matrix-io.github.io/matrix-documentation/matrix-creator/overview/).
 
-Currently the wrapper only supports detecting and reading NFC tags.
 
 ## Roadmap
-- [x] Reading
-- [ ] Writing
+- [x] Reading Info (All tags)
+- [x] Reading (MIFARE Ultralight & NTAG)
+- [x] Writing (MIFARE Ultralight & NTAG)
 - [ ] Improve installation & usage
 
-## License
+# Prerequisites
+Before moving on, be sure to have 
+[setup](https://matrix-io.github.io/matrix-documentation/matrix-creator/device-setup/) a MATRIX Creator with 
+[MATRIX HAL](https://matrix-io.github.io/matrix-documentation/matrix-hal/getting-started/installation-package/) 
+installed (HAL is needed for LEDs & matrix-creator-init).
 
-All files in this repository (not including the proprietary NXP NFC Reader Library) are distributed under the GPL3 license.
 
-## External components
+## Download The NXP Library
+> Due to NXP's terms & conditions, we cannot directly distribute the library to our users.
 
-NXP releases the source code to their library upon registering an account with their website.
+You can download the **NFC Reader Library for PN512** by creating an account on the NXP website and downloading the zip file [**here**](https://www.nxp.com/products/identification-security/secure-car-access/nfc-reader-library-software-support-for-nfc-frontend-solutions:NFC-READER-LIBRARY?tab=In-Depth_Tab#nogo).
 
-Start by downloading the library files from here:
 
-https://www.nxp.com/products/identification-security/secure-car-access/nfc-reader-library-software-support-for-nfc-frontend-solutions:NFC-READER-LIBRARY?tab=In-Depth_Tab#nogo
+Click the download button.
 
-After you click download, click `4.04.05 NFC Reader Library for PN512`.
+![](images/nxp_download_link.png)
 
-Then click `NFC Reader Library v4.040.05 R2 for PNEV512B including all software examples`.
+Click the `4.04.05 NFC Reader Library for PN512`.
 
-A file called SW297940.zip should begin downloading.
+![](images/pn512_library.png)
 
-Then clone this repo with
+Then click `NFC Reader Library v4.040.05 R2 for PNEV512B including all software examples` to finally download the library. A zip file called SW297940.zip should begin downloading.
+
+![](images/pn512_zip.png)
+
+## Install MATRIX HAL NXP
+
+To start installing the NXP library, clone this repository.
 
 ```
 git clone https://github.com/matrix-io/matrix-hal-nfc.git
 ```
 
-Move the SW297940.zip into the cloned matrix-hal-nfc folder.
+Now move the `SW297940.zip` file you downloaded into the matrix-hal-nfc folder. If you don't know how to transfer files into your Raspberry Pi, follow this [simple guide on using an FTP client](https://www.techmuzz.com/how-to/raspberrypi/transfer-files-raspberry-pi-computer/).
 
-Once complete, you can apply the MATRIX Creator specific config patch and install the library into /usr/local/include/matrix_nfc/nxp_nfc with the following commands:
+Once complete, you can apply our MATRIX Creator config patch and install the library into `/usr/local/include/matrix_nfc/nxp_nfc` with the following commands:
 
 ```
 unzip SW297940.zip -d nxp_nfc && patch < creator_nfc_pins.patch ./nxp_nfc/NxpNfcRdLib/intfs/phPlatform_Port_Pi_RC523.h && sudo mkdir -p /usr/local/include/matrix_nfc/nxp_nfc/ && sudo cp -r nxp_nfc/ /usr/local/include/matrix_nfc/ && sudo chmod 755 -R /usr/local/include/matrix_nfc/ && sudo rm -r nxp_nfc
 ```
 
-## Installation
-
-Please ensure that you have first followed the above steps and that the NXP Library is extracted to /usr/local/include/matrix_nfc/nxp_nfc.
+## Running The NFC Examples
 
 In the root directory of this repository there is a rebuild.sh file. This will run cmake and make, and also install the needed headers in `/usr/local/include/matrix_nfc/` and the libmatrix_hal_nfc.so library file in `/usr/local/lib/`.
 
 After building is complete, the compiled nfc_read example will be in the build folder.
-
-## Examples
-
-Currently the examples reside in ./examples/. This shows the intended wrapper usage.
