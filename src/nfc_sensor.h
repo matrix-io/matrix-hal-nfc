@@ -72,7 +72,8 @@ class NFCSensor {
   int ReadInfo(NFCInfo* nfc_info);
   int SimpleReadInfo(NFCInfo* nfc_info);
   std::vector<uint8_t> ReadPage_MFUL_NTAG(uint8_t page_number);
-  int WritePage_MFUL_NTAG(uint8_t page_number, std::vector<uint8_t> write_data);
+  int WritePage_MFUL_NTAG(uint8_t page_number,
+                          std::vector<uint8_t>& write_data);
   int ReadData_MFUL_NTAG(NFCData* nfc_data);
   // End User Functions
   // Begin Helper Functions
