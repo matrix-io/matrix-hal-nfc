@@ -84,6 +84,7 @@ class NFCSensor {
     int Deactivate();
     int ReadInfo(NFCInfo* nfc_info);
     int SimpleReadInfo(NFCInfo* nfc_info);
+    int ReadNDEF(NFC_NDEF* nfc_ndef);
     // Card specific functions reside in their corresponding classes
     // Functions for Mifare Ultralight Cards
     class MFUL {
@@ -107,10 +108,9 @@ class NFCSensor {
     // Begin Helper Functions
     // The three functions below are for NDEF
     // TODO: Cleanup NDEF
-    void DumpBuffer(uint8_t* pBuffer, uint32_t dwBufferLength);
-    int ReadNdefMessage(uint8_t tag_tech_type);
-    void ExportTagInfo(phacDiscLoop_Sw_DataParams_t* disc_loop,
-                       uint16_t tag_tech_type, NFCInfo* nfc_info);
+    int ReadNdefMessage(uint8_t tag_tech_type, NFC_NDEF* nfc_ndef);
+    int ExportTag(uint16_t tag_tech_type, NFCInfo* nfc_info,
+                  NFC_NDEF* nfc_ndef);
     // End Helper Functions
 };
 
