@@ -26,13 +26,12 @@ add_subdirectory(/usr/local/include/matrix_nfc/nxp_nfc/NxpNfcRdLib nxp_lib)
 # Include header files needed for compiling matrix-hal-nfc 
 include_directories(
     ./src/
-    # NXP Library Init
-    /usr/local/include/matrix_nfc/nxp_nfc/Nfcrdlib_SimplifiedAPI_ISO/intfs
 )
 
 set(matrix_hal_nfc_headers
 ./src/nfc_data.h
 ./src/nfc_info.h
+./src/nfc_ndef.h
 ./src/nfc_sensor.h
 ./src/nfc_types.h
 )
@@ -40,14 +39,6 @@ set(matrix_hal_nfc_headers
 set (matrix_hal_nfc_src
 ./src/nfc_sensor.cpp
 )
-
-# find_package(Threads)
-# find_library (FFTW_LIBRARIES NAMES fftw3f )
-# find_library(WIRINGPI_LIB NAMES wiringPi)
-# find_library(WIRINGPI_DEV_LIB NAMES wiringPiDev)
-# find_library(CRYPT_LIB NAMES crypt)
-# find_library(GFLAGS_LIB NAMES gflags)
-# message(STATUS "gflags found =>" "${GFLAGS_LIB}")
 
 add_library(matrix_hal_nfc SHARED ${matrix_hal_nfc_src})
 set_property(TARGET matrix_hal_nfc PROPERTY CXX_STANDARD 11)

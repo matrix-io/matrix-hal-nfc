@@ -23,14 +23,6 @@ include_directories(
     ../src/
 )
 
-# find_package(Threads)
-# find_library(FFTW_LIBRARIES NAMES fftw3f )
-# find_library(WIRINGPI_LIB NAMES wiringPi)
-# find_library(WIRINGPI_DEV_LIB NAMES wiringPiDev)
-# find_library(CRYPT_LIB NAMES crypt)
-# find_library(GFLAGS_LIB NAMES gflags)
-# message(STATUS "gflags found =>" "${GFLAGS_LIB}")
-
 add_executable(nfc_detect nfc_detect.cpp)
 set_property(TARGET nfc_detect PROPERTY CXX_STANDARD 11)
 target_link_libraries(nfc_detect matrix_creator_hal)
