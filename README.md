@@ -1,5 +1,3 @@
-> NOTICE: This repository is currently awaiting for a patch to be added in https://github.com/matrix-io/matrix-creator-init
-
 # MATRIX HAL NFC (WIP)
 
 matrix-hal-nfc is a simple, easy to use wrapper for using NXP's NFC Reader Library with the PN512 chip on the [MATRIX Creator](https://matrix-io.github.io/matrix-documentation/matrix-creator/overview/).
