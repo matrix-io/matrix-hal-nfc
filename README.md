@@ -59,6 +59,7 @@ Inside matrix-hal-nxp, you need to run the build script to finish the library in
 
 ```
 ./build.sh
+sudo ldconfig
 ```
 
 ## Running The NFC Examples
