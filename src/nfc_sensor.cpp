@@ -120,7 +120,7 @@ int NFCSensor::ReadInfo(NFCInfo *nfc_info) {
         discovery_loop, PHAC_DISCLOOP_CONFIG_TECH_DETECTED, &tag_tech_type);
     if (nfc_lib_status != PH_ERR_SUCCESS || tag_tech_type == 0)
         return -nfc_lib_status;
-    ExportTag(tag_tech_type, nfc_info, nullptr);
+    ExportTag(tag_tech_type, nfc_info);
     return nfc_lib_status;
 }
 
@@ -142,12 +142,50 @@ int NFCSensor::SimpleReadInfo(NFCInfo *nfc_info) {
 int NFCSensor::ReadNDEF(NFC_NDEF *nfc_ndef) {
     nfc_ndef->recently_updated = false;
     uint16_t tag_tech_type = 0;
+    uint8_t top_tag_type = 0;
+    uint8_t top_tag_state = 0;
+    uint16_t ndef_length = 0;
     nfc_lib_status = phacDiscLoop_GetConfig(
         discovery_loop, PHAC_DISCLOOP_CONFIG_TECH_DETECTED, &tag_tech_type);
     if (nfc_lib_status != PH_ERR_SUCCESS || tag_tech_type == 0)
         return -nfc_lib_status;
-    nfc_lib_status = ExportTag(tag_tech_type, nullptr, nfc_ndef);
-    return nfc_lib_status;
+    top_tag_type = ExportTag(tag_tech_type, nullptr);
+    if (top_tag_type == PHAL_TOP_TAG_TYPE_T4T_TAG) {
+        // NXP does this before reading NDEF from a T4 Tag, this may possibly
+        // not be correct...
+        uint8_t CID_enabled = 0;
+        uint8_t CID = 0;
+        uint8_t NAD_supported = 0;
+        uint8_t NAD = 0;
+        uint8_t FWI = 0;
+        uint8_t FSDI = 0;
+        uint8_t FSCI = 0;
+        phpalI14443p4a_Sw_GetProtocolParams(
+            (phpalI14443p4a_Sw_DataParams_t *)
+                discovery_loop->pPal1443p4aDataParams,
+            &CID_enabled, &CID, &NAD_supported, &FWI, &FSDI, &FSCI);
+        phpalI14443p4_Sw_SetProtocol((phpalI14443p4_Sw_DataParams_t *)
+                                         discovery_loop->pPal14443p4DataParams,
+                                     CID_enabled, CID, NAD_supported, NAD, FWI,
+                                     FSDI, FSCI);
+    }
+    nfc_ndef->Reset();
+    /* Configure Top layer for specified tag type */
+    nfc_lib_status = phalTop_SetConfig(&tag_operations,
+                                       PHAL_TOP_CONFIG_TAG_TYPE, top_tag_type);
+    /* Check for NDEF presence */
+    nfc_lib_status = phalTop_CheckNdef(&tag_operations, &top_tag_state);
+    if ((top_tag_state == PHAL_TOP_STATE_READONLY) ||
+        (top_tag_state == PHAL_TOP_STATE_READWRITE)) {
+        nfc_ndef->ndef_detected = true;
+        // Read NDEF message
+        nfc_lib_status =
+            phalTop_ReadNdef(&tag_operations, data_buffer, &ndef_length);
+        nfc_ndef->read_ndef =
+            std::vector<uint8_t>(data_buffer, data_buffer + ndef_length);
+    }
+    // TODO: Fix error handling
+    return -nfc_lib_status;
 }
 
 /* This will read a single specified page (Card must already have been
@@ -227,35 +265,15 @@ int NFCSensor::MFUL::ReadData(NFCData *nfc_data) {
 
 /* *********************** PRIVATE FUNCTIONS ************************ */
 
-int NFCSensor::ActuallyReadNDEF(uint8_t tag_tech_type, NFC_NDEF *nfc_ndef) {
-    phStatus_t nfc_lib_status;
-    uint8_t top_tag_state;
-    uint16_t ndef_length = 0;
-    nfc_ndef->Reset();
-    /* Configure Top layer for specified tag type */
-    nfc_lib_status = phalTop_SetConfig(&tag_operations,
-                                       PHAL_TOP_CONFIG_TAG_TYPE, tag_tech_type);
-    /* Check for NDEF presence */
-    nfc_lib_status = phalTop_CheckNdef(&tag_operations, &top_tag_state);
-    if ((top_tag_state == PHAL_TOP_STATE_READONLY) ||
-        (top_tag_state == PHAL_TOP_STATE_READWRITE)) {
-        nfc_ndef->ndef_detected = true;
-        // Read NDEF message
-        nfc_lib_status =
-            phalTop_ReadNdef(&tag_operations, data_buffer, &ndef_length);
-        nfc_ndef->read_ndef =
-            std::vector<uint8_t>(data_buffer, data_buffer + ndef_length);
-    }
-    return -nfc_lib_status;
-}
-
-int NFCSensor::ExportTag(uint16_t tag_tech_type, NFCInfo *nfc_info,
-                         NFC_NDEF *nfc_ndef) {
+/* This function returns top_tag_type for use with tag_operations, it will also
+ * populate nfc_info (if provided) */
+uint8_t NFCSensor::ExportTag(uint16_t tag_tech_type, NFCInfo *nfc_info) {
+    uint8_t top_tag_type = 0;
     if (nfc_info) {
         nfc_info->Reset();
         nfc_info->card_type = DescCardType(peer_info.dwActivatedType);
     }
-    uint8_t tag_type;
+    uint8_t identify_tag;
     if (PHAC_DISCLOOP_CHECK_ANDMASK(tag_tech_type,
                                     PHAC_DISCLOOP_POS_BIT_MASK_A)) {
         if (nfc_info) {
@@ -274,19 +292,15 @@ int NFCSensor::ExportTag(uint16_t tag_tech_type, NFCInfo *nfc_info,
         }
         if (discovery_loop->sTypeATargetInfo.bT1TFlag) {
             if (nfc_info) nfc_info->type = "1";
-            if (nfc_ndef)
-                nfc_lib_status =
-                    ActuallyReadNDEF(PHAL_TOP_TAG_TYPE_T1T_TAG, nfc_ndef);
+            top_tag_type = PHAL_TOP_TAG_TYPE_T1T_TAG;
         } else {
-            tag_type =
+            identify_tag =
                 (discovery_loop->sTypeATargetInfo.aTypeA_I3P3[0].aSak & 0x60);
-            tag_type = tag_type >> 5;
-            switch (tag_type) {
+            identify_tag = identify_tag >> 5;
+            switch (identify_tag) {
                 case PHAC_DISCLOOP_TYPEA_TYPE2_TAG_CONFIG_MASK: {
                     if (nfc_info) nfc_info->type = "2";
-                    if (nfc_ndef)
-                        nfc_lib_status = ActuallyReadNDEF(
-                            PHAL_TOP_TAG_TYPE_T2T_TAG, nfc_ndef);
+                    top_tag_type = PHAL_TOP_TAG_TYPE_T2T_TAG;
                     // TODO: look into this
                     // TODO: This is for testing only, remove
                     // uint8_t tmp[8];
@@ -297,56 +311,14 @@ int NFCSensor::ExportTag(uint16_t tag_tech_type, NFCInfo *nfc_info,
                 } break;
                 case PHAC_DISCLOOP_TYPEA_TYPE4A_TAG_CONFIG_MASK:
                     if (nfc_info) nfc_info->type = "4A";
-                    if (nfc_ndef) {
-                        // NXP does this before reading NDEF from a Type 4A Tag
-                        uint8_t CID_enabled = 0;
-                        uint8_t CID = 0;
-                        uint8_t NAD_supported = 0;
-                        uint8_t NAD = 0;
-                        uint8_t FWI = 0;
-                        uint8_t FSDI = 0;
-                        uint8_t FSCI = 0;
-                        phpalI14443p4a_Sw_GetProtocolParams(
-                            (phpalI14443p4a_Sw_DataParams_t *)
-                                discovery_loop->pPal1443p4aDataParams,
-                            &CID_enabled, &CID, &NAD_supported, &FWI, &FSDI,
-                            &FSCI);
-                        phpalI14443p4_Sw_SetProtocol(
-                            (phpalI14443p4_Sw_DataParams_t *)
-                                discovery_loop->pPal14443p4DataParams,
-                            CID_enabled, CID, NAD_supported, NAD, FWI, FSDI,
-                            FSCI);
-                        nfc_lib_status = ActuallyReadNDEF(
-                            PHAL_TOP_TAG_TYPE_T4T_TAG, nfc_ndef);
-                    }
+                    top_tag_type = PHAL_TOP_TAG_TYPE_T4T_TAG;
                     break;
                 case PHAC_DISCLOOP_TYPEA_TYPE_NFC_DEP_TAG_CONFIG_MASK:
                     if (nfc_info) nfc_info->type = "P2P";
                     break;
                 case PHAC_DISCLOOP_TYPEA_TYPE_NFC_DEP_TYPE4A_TAG_CONFIG_MASK:
                     if (nfc_info) nfc_info->type = "NFC_DEP & 4A";
-                    if (nfc_ndef) {
-                        // NXP does this before reading NDEF from a Type 4A Tag
-                        uint8_t CID_enabled = 0;
-                        uint8_t CID = 0;
-                        uint8_t NAD_supported = 0;
-                        uint8_t NAD = 0;
-                        uint8_t FWI = 0;
-                        uint8_t FSDI = 0;
-                        uint8_t FSCI = 0;
-                        phpalI14443p4a_Sw_GetProtocolParams(
-                            (phpalI14443p4a_Sw_DataParams_t *)
-                                discovery_loop->pPal1443p4aDataParams,
-                            &CID_enabled, &CID, &NAD_supported, &FWI, &FSDI,
-                            &FSCI);
-                        phpalI14443p4_Sw_SetProtocol(
-                            (phpalI14443p4_Sw_DataParams_t *)
-                                discovery_loop->pPal14443p4DataParams,
-                            CID_enabled, CID, NAD_supported, NAD, FWI, FSDI,
-                            FSCI);
-                        nfc_lib_status = ActuallyReadNDEF(
-                            PHAL_TOP_TAG_TYPE_T4T_TAG, nfc_ndef);
-                    }
+                    top_tag_type = PHAL_TOP_TAG_TYPE_T4T_TAG;
                     break;
                 default:
                     break;
@@ -387,8 +359,7 @@ int NFCSensor::ExportTag(uint16_t tag_tech_type, NFCInfo *nfc_info,
             if (nfc_info) nfc_info->type = "P2P";
         } else {
             if (nfc_info) nfc_info->type = "3";
-            nfc_lib_status =
-                ActuallyReadNDEF(PHAL_TOP_TAG_TYPE_T3T_TAG, nfc_ndef);
+            top_tag_type = PHAL_TOP_TAG_TYPE_T3T_TAG;
         }
         if (nfc_info) {
             if (discovery_loop->sTypeFTargetInfo.aTypeFTag[0].bBaud !=
@@ -399,10 +370,6 @@ int NFCSensor::ExportTag(uint16_t tag_tech_type, NFCInfo *nfc_info,
             }
         }
     }
-    // Return negative status since function is part of NXP standard library.
-    if (nfc_ndef)
-        return -nfc_lib_status;
-    else
-        return PH_NFCLIB_STATUS_SUCCESS;
+    return top_tag_type;
 }
 }  // namespace matrix_hal

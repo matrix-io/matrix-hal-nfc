@@ -109,11 +109,7 @@ class NFCSensor {
     MFUL mful = MFUL(this);
     NTAG ntag = NTAG(this);
     // Begin Helper Functions
-    // The three functions below are for NDEF
-    // TODO: Cleanup NDEF
-    int ActuallyReadNDEF(uint8_t tag_tech_type, NFC_NDEF* nfc_ndef);
-    int ExportTag(uint16_t tag_tech_type, NFCInfo* nfc_info,
-                  NFC_NDEF* nfc_ndef);
+    uint8_t ExportTag(uint16_t tag_tech_type, NFCInfo* nfc_info);
     // End Helper Functions
 };
 
