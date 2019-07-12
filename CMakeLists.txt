@@ -40,6 +40,7 @@ set(matrix_hal_nfc_headers
 ./src/nfc_data.h
 ./src/nfc_info.h
 ./src/nfc_sensor.h
+./src/nfc_types.h
 )
 
 set (matrix_hal_nfc_src
