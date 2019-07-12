@@ -12,6 +12,7 @@ namespace matrix_hal {
 class NFC_NDEF {
    public:
     bool recently_updated = false;
+    bool ndef_detected = false;
     // Raw NDEF message read from the NFC Tag
     std::vector<uint8_t> read_ndef;
 
@@ -19,11 +20,20 @@ class NFC_NDEF {
     void Reset() {
         // Reset parameters before populating with info from new object
         recently_updated = true;
+        ndef_detected = false;
         read_ndef.clear();
     }
 
     // TODO: Rename and Redo DumpBuffer
     void DumpBuffer() {
+        if (ndef_detected == false) {
+            std::cout << "NDEF is Not Detected" << std::endl;
+            return;
+        }
+        if (read_ndef.empty()) {
+            std::cout << "NDEF is NULL" << std::endl;
+            return;
+        }
         uint8_t* pBuffer = read_ndef.data();
         uint32_t dwBufferLength = read_ndef.size();
         uint32_t i;

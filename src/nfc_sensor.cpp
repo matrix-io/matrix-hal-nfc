@@ -8,17 +8,18 @@ using std::endl;
 
 namespace matrix_hal {
 NFCSensor::NFCSensor() {
+    std::string init_err_msg = "NFC Sensor Init Failed";
     (void)phNfcLib_Init();
     if (nfc_lib_status != PH_NFCLIB_STATUS_SUCCESS) {
-        throw "NFC Sensor Init Failed";
+        throw init_err_msg;
     }
     /* Configuring the activation profile as ISO */
     phNfcLib_SetConfig_Value(PH_NFCLIB_CONFIG_ACTIVATION_PROFILE,
                              PH_NFCLIB_ACTIVATION_PROFILE_ISO);
     if (nfc_lib_status != PH_NFCLIB_STATUS_SUCCESS) {
-        throw "NFC Sensor Init Failed";
+        throw init_err_msg;
     }
-    // Get pointer to all components initialized by Simplified Lib
+    // Get pointer to all components initialized by Simplified NXP Lib
     bal = (phbalReg_Type_t *)phNfcLib_GetDataParams(PH_COMP_BAL);
     hal = (phhalHw_Nfc_Ic_DataParams_t *)phNfcLib_GetDataParams(PH_COMP_HAL);
     pal_iso14443p3a = (phpalI14443p3a_Sw_DataParams_t *)phNfcLib_GetDataParams(
@@ -29,39 +30,63 @@ NFCSensor::NFCSensor() {
         PH_COMP_PAL_ISO14443P4A);
     pal_iso14443p4 = (phpalI14443p4_Sw_DataParams_t *)phNfcLib_GetDataParams(
         PH_COMP_PAL_ISO14443P4);
-    disc_loop = (phacDiscLoop_Sw_DataParams_t *)phNfcLib_GetDataParams(
+    discovery_loop = (phacDiscLoop_Sw_DataParams_t *)phNfcLib_GetDataParams(
         PH_COMP_AC_DISCLOOP);
     // Initialize additional components
     nfc_lib_status =
-        phpalMifare_Sw_Init(&pal_Mifare, sizeof(phpalMifare_Sw_DataParams_t),
+        phpalMifare_Sw_Init(&pal_mifare, sizeof(phpalMifare_Sw_DataParams_t),
                             &hal->sHal, pal_iso14443p4);
+    if (nfc_lib_status != PH_ERR_SUCCESS) {
+        throw init_err_msg;
+    }
     nfc_lib_status = phpalFelica_Sw_Init(
-        &pal_Felica, sizeof(phpalFelica_Sw_DataParams_t), &hal->sHal);
+        &pal_felica, sizeof(phpalFelica_Sw_DataParams_t), &hal->sHal);
+    if (nfc_lib_status != PH_ERR_SUCCESS) {
+        throw init_err_msg;
+    }
     nfc_lib_status =
-        phalMful_Sw_Init(&al_MFUL, sizeof(phalMful_Sw_DataParams_t),
-                         &pal_Mifare, NULL, NULL, NULL);
+        phalMful_Sw_Init(&al_mful, sizeof(phalMful_Sw_DataParams_t),
+                         &pal_mifare, NULL, NULL, NULL);
+    if (nfc_lib_status != PH_ERR_SUCCESS) {
+        throw init_err_msg;
+    }
     nfc_lib_status =
-        phalMfdf_Sw_Init(&al_MFDF, sizeof(phalMfdf_Sw_DataParams_t),
-                         &pal_Mifare, NULL, NULL, NULL, &hal->sHal);
-    nfc_lib_status = phalMfc_Sw_Init(&al_MFC, sizeof(phalMfc_Sw_DataParams_t),
-                                     &pal_Mifare, NULL);
+        phalMfdf_Sw_Init(&al_mfdf, sizeof(phalMfdf_Sw_DataParams_t),
+                         &pal_mifare, NULL, NULL, NULL, &hal->sHal);
+    if (nfc_lib_status != PH_ERR_SUCCESS) {
+        throw init_err_msg;
+    }
+    nfc_lib_status = phalMfc_Sw_Init(&al_mfc, sizeof(phalMfc_Sw_DataParams_t),
+                                     &pal_mifare, NULL);
+    if (nfc_lib_status != PH_ERR_SUCCESS) {
+        throw init_err_msg;
+    }
     nfc_lib_status = phalFelica_Sw_Init(
-        &al_Felica, sizeof(phalFelica_Sw_DataParams_t), &pal_Felica);
-    nfc_lib_status = phalT1T_Sw_Init(&al_T1T, sizeof(phalT1T_Sw_DataParams_t),
+        &al_felica, sizeof(phalFelica_Sw_DataParams_t), &pal_felica);
+    if (nfc_lib_status != PH_ERR_SUCCESS) {
+        throw init_err_msg;
+    }
+    nfc_lib_status = phalT1T_Sw_Init(&al_t1t, sizeof(phalT1T_Sw_DataParams_t),
                                      pal_iso14443p3a);
+    if (nfc_lib_status != PH_ERR_SUCCESS) {
+        throw init_err_msg;
+    }
     nfc_lib_status =
-        phalTop_Sw_Init(&tag_operation, sizeof(phalTop_Sw_DataParams_t),
-                        &al_T1T, &al_MFUL, &al_Felica, &al_MFDF, NULL);
+        phalTop_Sw_Init(&tag_operations, sizeof(phalTop_Sw_DataParams_t),
+                        &al_t1t, &al_mful, &al_felica, &al_mfdf, NULL);
+    if (nfc_lib_status != PH_ERR_SUCCESS) {
+        throw init_err_msg;
+    }
     // Pass additional components into discovery loop
-    disc_loop->pHalDataParams = &hal->sHal;
-    disc_loop->pPal1443p3aDataParams = pal_iso14443p3a;
-    disc_loop->pPal1443p3bDataParams = pal_iso14443p3b;
-    disc_loop->pPal1443p4aDataParams = pal_iso14443p4a;
-    disc_loop->pPal14443p4DataParams = pal_iso14443p4;
-    disc_loop->pPalFelicaDataParams = &pal_Felica;
-    disc_loop->pAlT1TDataParams = &al_T1T;
-    /* Disable blocking so that activate function will return upon every
-    iteration of discovery loop */
+    discovery_loop->pHalDataParams = &hal->sHal;
+    discovery_loop->pPal1443p3aDataParams = pal_iso14443p3a;
+    discovery_loop->pPal1443p3bDataParams = pal_iso14443p3b;
+    discovery_loop->pPal1443p4aDataParams = pal_iso14443p4a;
+    discovery_loop->pPal14443p4DataParams = pal_iso14443p4;
+    discovery_loop->pPalFelicaDataParams = &pal_felica;
+    discovery_loop->pAlT1TDataParams = &al_t1t;
+    /* Disable blocking so that activate function will return if no card in
+     * sensor field */
     phNfcLib_SetConfig_Value(PH_NFCLIB_CONFIG_ACTIVATION_BLOCKING, PH_OFF);
 }
 
@@ -82,7 +107,7 @@ int NFCSensor::Deactivate() {
         phNfcLib_Deactivate(PH_NFCLIB_DEACTIVATION_MODE_RF_OFF, &peer_info);
     }
     return nfc_lib_status;
-}
+}  // namespace matrix_hal
 
 /* This will read and populate info data (Card must already have been
  * activated!)
@@ -92,7 +117,7 @@ int NFCSensor::ReadInfo(NFCInfo *nfc_info) {
     uint16_t tag_tech_type = 0;
     // Hook into the discovery loop and pull UID/AQT(A/B)/SAK/Type from there
     nfc_lib_status = phacDiscLoop_GetConfig(
-        disc_loop, PHAC_DISCLOOP_CONFIG_TECH_DETECTED, &tag_tech_type);
+        discovery_loop, PHAC_DISCLOOP_CONFIG_TECH_DETECTED, &tag_tech_type);
     if (nfc_lib_status != PH_ERR_SUCCESS || tag_tech_type == 0)
         return -nfc_lib_status;
     ExportTag(tag_tech_type, nfc_info, nullptr);
@@ -118,7 +143,7 @@ int NFCSensor::ReadNDEF(NFC_NDEF *nfc_ndef) {
     nfc_ndef->recently_updated = false;
     uint16_t tag_tech_type = 0;
     nfc_lib_status = phacDiscLoop_GetConfig(
-        disc_loop, PHAC_DISCLOOP_CONFIG_TECH_DETECTED, &tag_tech_type);
+        discovery_loop, PHAC_DISCLOOP_CONFIG_TECH_DETECTED, &tag_tech_type);
     if (nfc_lib_status != PH_ERR_SUCCESS || tag_tech_type == 0)
         return -nfc_lib_status;
     nfc_lib_status = ExportTag(tag_tech_type, nullptr, nfc_ndef);
@@ -202,41 +227,28 @@ int NFCSensor::MFUL::ReadData(NFCData *nfc_data) {
 
 /* *********************** PRIVATE FUNCTIONS ************************ */
 
-// TODO : Make ReadNdef neater
-int NFCSensor::ReadNdefMessage(uint8_t tag_tech_type, NFC_NDEF *nfc_ndef) {
-    phStatus_t status;
-    uint8_t bTagState;
-    uint16_t wDataLength = 0;
-
+int NFCSensor::ActuallyReadNDEF(uint8_t tag_tech_type, NFC_NDEF *nfc_ndef) {
+    phStatus_t nfc_lib_status;
+    uint8_t top_tag_state;
+    uint16_t ndef_length = 0;
+    nfc_ndef->Reset();
     /* Configure Top layer for specified tag type */
-    status = phalTop_SetConfig(&tag_operation, PHAL_TOP_CONFIG_TAG_TYPE,
-                               tag_tech_type);
-    // DEBUG_ERROR_PRINT(status);
-
+    nfc_lib_status = phalTop_SetConfig(&tag_operations,
+                                       PHAL_TOP_CONFIG_TAG_TYPE, tag_tech_type);
     /* Check for NDEF presence */
-    status = phalTop_CheckNdef(&tag_operation, &bTagState);
-    // DEBUG_ERROR_PRINT(status);
-    if ((bTagState == PHAL_TOP_STATE_READONLY) ||
-        (bTagState == PHAL_TOP_STATE_READWRITE)) {
-        /* Read NDEF message */
-        status = phalTop_ReadNdef(&tag_operation, data_buffer, &wDataLength);
-        // DEBUG_ERROR_PRINT(status);
-        /* Print NDEF message, if not NULL NDEF */
-        if (wDataLength) {
-            //     printf("\tNDEF detected...\n");
-            //     printf("\tNDEF length: %d\n", wDataLength);
-            //     printf("\tNDEF message:\n");
-            nfc_ndef->read_ndef =
-                std::vector<uint8_t>(data_buffer, data_buffer + wDataLength);
-        } else {
-            // printf("\tNDEF content is NULL...\n");
-        }
-    } else {
-        // printf("\tNo NDEF content detected...\n");
+    nfc_lib_status = phalTop_CheckNdef(&tag_operations, &top_tag_state);
+    if ((top_tag_state == PHAL_TOP_STATE_READONLY) ||
+        (top_tag_state == PHAL_TOP_STATE_READWRITE)) {
+        nfc_ndef->ndef_detected = true;
+        // Read NDEF message
+        nfc_lib_status =
+            phalTop_ReadNdef(&tag_operations, data_buffer, &ndef_length);
+        nfc_ndef->read_ndef =
+            std::vector<uint8_t>(data_buffer, data_buffer + ndef_length);
     }
-    return status;
+    return -nfc_lib_status;
 }
-// TODO: Make NDEF Read work with all tags
+
 int NFCSensor::ExportTag(uint16_t tag_tech_type, NFCInfo *nfc_info,
                          NFC_NDEF *nfc_ndef) {
     if (nfc_info) {
@@ -249,32 +261,36 @@ int NFCSensor::ExportTag(uint16_t tag_tech_type, NFCInfo *nfc_info,
         if (nfc_info) {
             nfc_info->technology = "A";
             uint8_t UID_size =
-                disc_loop->sTypeATargetInfo.aTypeA_I3P3[0].bUidSize;
-            uint8_t *UID_ptr = disc_loop->sTypeATargetInfo.aTypeA_I3P3[0].aUid;
+                discovery_loop->sTypeATargetInfo.aTypeA_I3P3[0].bUidSize;
+            uint8_t *UID_ptr =
+                discovery_loop->sTypeATargetInfo.aTypeA_I3P3[0].aUid;
             nfc_info->UID = std::vector<uint8_t>(UID_ptr, UID_ptr + UID_size);
             uint8_t ATQ_size = PHAC_DISCLOOP_I3P3A_MAX_ATQA_LENGTH;
-            uint8_t *ATQ_ptr = disc_loop->sTypeATargetInfo.aTypeA_I3P3[0].aAtqa;
+            uint8_t *ATQ_ptr =
+                discovery_loop->sTypeATargetInfo.aTypeA_I3P3[0].aAtqa;
             nfc_info->ATQ = std::vector<uint8_t>(ATQ_ptr, ATQ_ptr + ATQ_size);
-            nfc_info->SAK = disc_loop->sTypeATargetInfo.aTypeA_I3P3[0].aSak;
+            nfc_info->SAK =
+                discovery_loop->sTypeATargetInfo.aTypeA_I3P3[0].aSak;
         }
-        if (disc_loop->sTypeATargetInfo.bT1TFlag) {
+        if (discovery_loop->sTypeATargetInfo.bT1TFlag) {
             if (nfc_info) nfc_info->type = "1";
             if (nfc_ndef)
                 nfc_lib_status =
-                    ReadNdefMessage(PHAL_TOP_TAG_TYPE_T1T_TAG, nfc_ndef);
+                    ActuallyReadNDEF(PHAL_TOP_TAG_TYPE_T1T_TAG, nfc_ndef);
         } else {
-            tag_type = (disc_loop->sTypeATargetInfo.aTypeA_I3P3[0].aSak & 0x60);
+            tag_type =
+                (discovery_loop->sTypeATargetInfo.aTypeA_I3P3[0].aSak & 0x60);
             tag_type = tag_type >> 5;
             switch (tag_type) {
                 case PHAC_DISCLOOP_TYPEA_TYPE2_TAG_CONFIG_MASK: {
                     if (nfc_info) nfc_info->type = "2";
                     if (nfc_ndef)
-                        nfc_lib_status = ReadNdefMessage(
+                        nfc_lib_status = ActuallyReadNDEF(
                             PHAL_TOP_TAG_TYPE_T2T_TAG, nfc_ndef);
                     // TODO: look into this
                     // TODO: This is for testing only, remove
                     // uint8_t tmp[8];
-                    // phalMful_GetVersion(&al_MFUL, tmp);
+                    // phalMful_GetVersion(&al_mful, tmp);
                     // cout << "MFUL Data" << endl;
                     // std::vector<uint8_t> vec(tmp, tmp + 8);
                     // cout << NFCData::StrHexByteVec(vec) << endl;
@@ -282,17 +298,25 @@ int NFCSensor::ExportTag(uint16_t tag_tech_type, NFCInfo *nfc_info,
                 case PHAC_DISCLOOP_TYPEA_TYPE4A_TAG_CONFIG_MASK:
                     if (nfc_info) nfc_info->type = "4A";
                     if (nfc_ndef) {
-                        // phpalI14443p4a_Sw_GetProtocolParams(
-                        //     (phpalI14443p4a_Sw_DataParams_t *)
-                        //         disc_loop->pPal1443p4aDataParams,
-                        //     &bCidEnabled, &bCid, &bNadSuported, &bFwi,
-                        //     &bFsdi, &bFsci);
-                        // phpalI14443p4_Sw_SetProtocol(
-                        //     (phpalI14443p4_Sw_DataParams_t *)
-                        //         disc_loop->pPal14443p4DataParams,
-                        //     bCidEnabled, bCid, bNadSuported, bNad, bFwi,
-                        //     bFsdi, bFsci);
-                        nfc_lib_status = ReadNdefMessage(
+                        // NXP does this before reading NDEF from a Type 4A Tag
+                        uint8_t CID_enabled = 0;
+                        uint8_t CID = 0;
+                        uint8_t NAD_supported = 0;
+                        uint8_t NAD = 0;
+                        uint8_t FWI = 0;
+                        uint8_t FSDI = 0;
+                        uint8_t FSCI = 0;
+                        phpalI14443p4a_Sw_GetProtocolParams(
+                            (phpalI14443p4a_Sw_DataParams_t *)
+                                discovery_loop->pPal1443p4aDataParams,
+                            &CID_enabled, &CID, &NAD_supported, &FWI, &FSDI,
+                            &FSCI);
+                        phpalI14443p4_Sw_SetProtocol(
+                            (phpalI14443p4_Sw_DataParams_t *)
+                                discovery_loop->pPal14443p4DataParams,
+                            CID_enabled, CID, NAD_supported, NAD, FWI, FSDI,
+                            FSCI);
+                        nfc_lib_status = ActuallyReadNDEF(
                             PHAL_TOP_TAG_TYPE_T4T_TAG, nfc_ndef);
                     }
                     break;
@@ -302,7 +326,25 @@ int NFCSensor::ExportTag(uint16_t tag_tech_type, NFCInfo *nfc_info,
                 case PHAC_DISCLOOP_TYPEA_TYPE_NFC_DEP_TYPE4A_TAG_CONFIG_MASK:
                     if (nfc_info) nfc_info->type = "NFC_DEP & 4A";
                     if (nfc_ndef) {
-                        nfc_lib_status = ReadNdefMessage(
+                        // NXP does this before reading NDEF from a Type 4A Tag
+                        uint8_t CID_enabled = 0;
+                        uint8_t CID = 0;
+                        uint8_t NAD_supported = 0;
+                        uint8_t NAD = 0;
+                        uint8_t FWI = 0;
+                        uint8_t FSDI = 0;
+                        uint8_t FSCI = 0;
+                        phpalI14443p4a_Sw_GetProtocolParams(
+                            (phpalI14443p4a_Sw_DataParams_t *)
+                                discovery_loop->pPal1443p4aDataParams,
+                            &CID_enabled, &CID, &NAD_supported, &FWI, &FSDI,
+                            &FSCI);
+                        phpalI14443p4_Sw_SetProtocol(
+                            (phpalI14443p4_Sw_DataParams_t *)
+                                discovery_loop->pPal14443p4DataParams,
+                            CID_enabled, CID, NAD_supported, NAD, FWI, FSDI,
+                            FSCI);
+                        nfc_lib_status = ActuallyReadNDEF(
                             PHAL_TOP_TAG_TYPE_T4T_TAG, nfc_ndef);
                     }
                     break;
@@ -317,11 +359,13 @@ int NFCSensor::ExportTag(uint16_t tag_tech_type, NFCInfo *nfc_info,
             nfc_info->technology = "B";
             /* PUPI Length is always 4 bytes */
             uint8_t UID_size = 0x04;
-            uint8_t *UID_ptr = disc_loop->sTypeBTargetInfo.aTypeB_I3P3[0].aPupi;
+            uint8_t *UID_ptr =
+                discovery_loop->sTypeBTargetInfo.aTypeB_I3P3[0].aPupi;
             nfc_info->UID = std::vector<uint8_t>(UID_ptr, UID_ptr + UID_size);
             uint8_t ATQ_size =
-                disc_loop->sTypeBTargetInfo.aTypeB_I3P3[0].bAtqBLength;
-            uint8_t *ATQ_ptr = disc_loop->sTypeBTargetInfo.aTypeB_I3P3[0].aAtqB;
+                discovery_loop->sTypeBTargetInfo.aTypeB_I3P3[0].bAtqBLength;
+            uint8_t *ATQ_ptr =
+                discovery_loop->sTypeBTargetInfo.aTypeB_I3P3[0].aAtqB;
             nfc_info->ATQ = std::vector<uint8_t>(ATQ_ptr, ATQ_ptr + ATQ_size);
         }
     }
@@ -332,19 +376,22 @@ int NFCSensor::ExportTag(uint16_t tag_tech_type, NFCInfo *nfc_info,
         if (nfc_info) {
             nfc_info->technology = "F";
             uint8_t UID_size = PHAC_DISCLOOP_FELICA_IDM_LENGTH;
-            uint8_t *UID_ptr = disc_loop->sTypeFTargetInfo.aTypeFTag[0].aIDmPMm;
+            uint8_t *UID_ptr =
+                discovery_loop->sTypeFTargetInfo.aTypeFTag[0].aIDmPMm;
             nfc_info->UID = std::vector<uint8_t>(UID_ptr, UID_ptr + UID_size);
         }
-        if ((disc_loop->sTypeFTargetInfo.aTypeFTag[0].aIDmPMm[0] == 0x01) &&
-            (disc_loop->sTypeFTargetInfo.aTypeFTag[0].aIDmPMm[1] == 0xFE)) {
+        if ((discovery_loop->sTypeFTargetInfo.aTypeFTag[0].aIDmPMm[0] ==
+             0x01) &&
+            (discovery_loop->sTypeFTargetInfo.aTypeFTag[0].aIDmPMm[1] ==
+             0xFE)) {
             if (nfc_info) nfc_info->type = "P2P";
         } else {
             if (nfc_info) nfc_info->type = "3";
             nfc_lib_status =
-                ReadNdefMessage(PHAL_TOP_TAG_TYPE_T3T_TAG, nfc_ndef);
+                ActuallyReadNDEF(PHAL_TOP_TAG_TYPE_T3T_TAG, nfc_ndef);
         }
         if (nfc_info) {
-            if (disc_loop->sTypeFTargetInfo.aTypeFTag[0].bBaud !=
+            if (discovery_loop->sTypeFTargetInfo.aTypeFTag[0].bBaud !=
                 PHAC_DISCLOOP_CON_BITR_212) {
                 nfc_info->bit_rate = 424;
             } else {

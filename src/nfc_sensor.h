@@ -19,20 +19,17 @@
 #define SIMPLIFIED_ISO_STACK 0x20000
 // END NXP Defines
 
-extern "C" {
 // Begin Variable Setup for NXP HAL
-// Do not change variable names in this section
-uint8_t bHalBufferTx[DATA_BUFFER_LEN]; /* HAL TX buffer. Size 260 - Based on
-                                          maximum FSL */
-uint8_t bHalBufferRx[DATA_BUFFER_LEN]; /* HAL RX buffer. Size 260 - Based on
-                                          maximum FSL */
-uint8_t sens_res[2] = {0x04, 0x00};    /* ATQ bytes - needed for anti-collision
-                                        */
-uint8_t nfc_id1[3] = {0xA1, 0xA2, 0xA3}; /* user defined bytes of the UID (one
-                                  is hardcoded)
-                                            - needed for anti-collision */
+// DO NOT change variable names in this section
+extern "C" {
+uint8_t bHalBufferTx[DATA_BUFFER_LEN];  // HAL TX buffer
+uint8_t bHalBufferRx[DATA_BUFFER_LEN];  // HAL RX buffer
+uint8_t sens_res[2] = {0x04, 0x00};  // ATQ bytes - required for anti-collision
+uint8_t nfc_id1[3] = {
+    0xA1, 0xA2,
+    0xA3};  // User defined bytes of the UID - required for anti-collision
 uint8_t sel_res = 0x40;
-uint8_t nfc_id3 = 0xFA; /* NFC3 byte - required for anti-collision */
+uint8_t nfc_id3 = 0xFA;  // NFC3 byte - required for anti-collision
 uint8_t poll_res[18] = {0x01, 0xFE, 0xB2, 0xB3, 0xB4, 0xB5, 0xB6, 0xB7, 0xC0,
                         0xC1, 0xC2, 0xC3, 0xC4, 0xC5, 0xC6, 0xC7, 0x23, 0x45};
 // Stubs, in case NXP HAL expects these implementations
@@ -55,28 +52,34 @@ class NFCSensor {
     phNfcLib_PeerInfo_t peer_info = {0};
     uint8_t data_buffer[DATA_BUFFER_LEN];  // universal data buffer
     // End Variable Setup for Simplified NXP Lib
-    // NXP Simplified Lib Component pointers
+    // NXP Simplified Lib Component pointers (Managed by Simplified NXP Lib)
     phbalReg_Type_t* bal;              // Bus Abstraction Layer component
     phhalHw_Nfc_Ic_DataParams_t* hal;  // Hardware Abstraction Layer component
     phpalI14443p3a_Sw_DataParams_t*
-        pal_iso14443p3a;  // PAL ISO I14443-A component
+        pal_iso14443p3a;  // Protocol Abstraction Layer ISO I14443-A component
     phpalI14443p3b_Sw_DataParams_t*
-        pal_iso14443p3b;  // PAL ISO I14443-B component
+        pal_iso14443p3b;  // Protocol Abstraction Layer ISO I14443-B component
     phpalI14443p4a_Sw_DataParams_t*
-        pal_iso14443p4a;  // PAL ISO I14443-4A component
+        pal_iso14443p4a;  // Protocol Abstraction Layer ISO I14443-4A component
     phpalI14443p4_Sw_DataParams_t*
-        pal_iso14443p4;                       // PAL ISO I14443-4 component
-    phacDiscLoop_Sw_DataParams_t* disc_loop;  // Discovery loop component
-    // NFC Standard Lib Components
-    phpalMifare_Sw_DataParams_t pal_Mifare;
-    phpalFelica_Sw_DataParams_t pal_Felica;
-    phalMful_Sw_DataParams_t al_MFUL;
-    phalMfdf_Sw_DataParams_t al_MFDF;
-    phalMfc_Sw_DataParams_t al_MFC;
-    phalFelica_Sw_DataParams_t al_Felica;
-    phalT1T_Sw_DataParams_t al_T1T;
-    phalTop_Sw_DataParams_t tag_operation;
-
+        pal_iso14443p4;  // Protocol Abstraction Layer ISO I14443-4 component
+    phacDiscLoop_Sw_DataParams_t*
+        discovery_loop;  // Application Layer Discovery Loop component
+    // NFC Standard Lib Components (Adding additional functionality)
+    phpalMifare_Sw_DataParams_t
+        pal_mifare;  // Protocol Abstraction Layer Mifare component
+    phpalFelica_Sw_DataParams_t
+        pal_felica;  // Protocol Abstraction Layer Felica component
+    phalMful_Sw_DataParams_t
+        al_mful;  // Application Layer Mifare Ultralight component
+    phalMfdf_Sw_DataParams_t
+        al_mfdf;  // Application Layer Mifare DESFire component
+    phalMfc_Sw_DataParams_t
+        al_mfc;  // Application Layer Mifare Classic component
+    phalFelica_Sw_DataParams_t al_felica;  // Application Layer Felica component
+    phalT1T_Sw_DataParams_t al_t1t;        // Application Layer Mifare component
+    phalTop_Sw_DataParams_t
+        tag_operations;  // Application Layer Tag Operations component
     // Begin User Functions
     NFCSensor();
     ~NFCSensor();
@@ -108,7 +111,7 @@ class NFCSensor {
     // Begin Helper Functions
     // The three functions below are for NDEF
     // TODO: Cleanup NDEF
-    int ReadNdefMessage(uint8_t tag_tech_type, NFC_NDEF* nfc_ndef);
+    int ActuallyReadNDEF(uint8_t tag_tech_type, NFC_NDEF* nfc_ndef);
     int ExportTag(uint16_t tag_tech_type, NFCInfo* nfc_info,
                   NFC_NDEF* nfc_ndef);
     // End Helper Functions
