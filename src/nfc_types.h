@@ -9,6 +9,8 @@
 extern "C" {
 #include <matrix_nfc/nxp_nfc/NxpNfcRdLib/intfs/phNfcLib.h>
 // TODO: Refine include statements and organize by type
+#include <matrix_nfc/nxp_nfc/NxpNfcRdLib/intfs/phCryptoRng.h>
+#include <matrix_nfc/nxp_nfc/NxpNfcRdLib/intfs/phCryptoSym.h>
 #include <matrix_nfc/nxp_nfc/NxpNfcRdLib/intfs/phalFelica.h>
 #include <matrix_nfc/nxp_nfc/NxpNfcRdLib/intfs/phalMfc.h>
 #include <matrix_nfc/nxp_nfc/NxpNfcRdLib/intfs/phalTop.h>

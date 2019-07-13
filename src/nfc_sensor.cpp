@@ -32,6 +32,24 @@ NFCSensor::NFCSensor() {
         PH_COMP_PAL_ISO14443P4);
     discovery_loop = (phacDiscLoop_Sw_DataParams_t *)phNfcLib_GetDataParams(
         PH_COMP_AC_DISCLOOP);
+    // Initialize Keystore and Crypto components
+    nfc_lib_status = phKeyStore_Sw_Init(
+        &keystore, sizeof(phKeyStore_Sw_DataParams_t), key_entries.data(),
+        key_entires_amount, key_version_pairs.data(), key_version_pairs_amount,
+        KUC_entries.data(), KUC_entries_amount);
+    if (nfc_lib_status != PH_ERR_SUCCESS) {
+        throw init_err_msg;
+    }
+    nfc_lib_status = phCryptoSym_Sw_Init(
+        &crypto_sym, sizeof(phCryptoSym_Sw_DataParams_t), &keystore);
+    if (nfc_lib_status != PH_ERR_SUCCESS) {
+        throw init_err_msg;
+    }
+    nfc_lib_status = phCryptoRng_Sw_Init(
+        &crypto_rng, sizeof(phCryptoRng_Sw_DataParams_t), &crypto_sym);
+    if (nfc_lib_status != PH_ERR_SUCCESS) {
+        throw init_err_msg;
+    }
     // Initialize additional components
     nfc_lib_status =
         phpalMifare_Sw_Init(&pal_mifare, sizeof(phpalMifare_Sw_DataParams_t),
@@ -46,18 +64,18 @@ NFCSensor::NFCSensor() {
     }
     nfc_lib_status =
         phalMful_Sw_Init(&al_mful, sizeof(phalMful_Sw_DataParams_t),
-                         &pal_mifare, NULL, NULL, NULL);
+                         &pal_mifare, &keystore, &crypto_sym, &crypto_rng);
     if (nfc_lib_status != PH_ERR_SUCCESS) {
         throw init_err_msg;
     }
-    nfc_lib_status =
-        phalMfdf_Sw_Init(&al_mfdf, sizeof(phalMfdf_Sw_DataParams_t),
-                         &pal_mifare, NULL, NULL, NULL, &hal->sHal);
+    nfc_lib_status = phalMfdf_Sw_Init(
+        &al_mfdf, sizeof(phalMfdf_Sw_DataParams_t), &pal_mifare, &keystore,
+        &crypto_sym, &crypto_rng, &hal->sHal);
     if (nfc_lib_status != PH_ERR_SUCCESS) {
         throw init_err_msg;
     }
     nfc_lib_status = phalMfc_Sw_Init(&al_mfc, sizeof(phalMfc_Sw_DataParams_t),
-                                     &pal_mifare, NULL);
+                                     &pal_mifare, &keystore);
     if (nfc_lib_status != PH_ERR_SUCCESS) {
         throw init_err_msg;
     }
@@ -265,12 +283,29 @@ int NFCSensor::MFUL::ReadData(NFCData *nfc_data) {
 
 /* *********************** PRIVATE FUNCTIONS ************************ */
 
+/* https://stackoverflow.com/questions/37002498/distinguish-ntag213-from-mf0icu2
+ */
+std::string NFCSensor::GetCardIC(NFCInfo *nfc_info) {
+    if (peer_info.dwActivatedType == E_PH_NFCLIB_MIFARE_ULTRALIGHT) {
+        // TODO: look into this
+        // TODO: This is for testing only, remove
+        std::vector<uint8_t> version_info = std::vector<uint8_t>(8);
+        nfc_lib_status = phalMful_GetVersion(&al_mful, version_info.data());
+        if (nfc_lib_status != PH_ERR_SUCCESS) {
+            // First generation tag
+        }
+        cout << "MFUL Data" << endl;
+        cout << NFCData::StrHexByteVec(version_info) << endl;
+    }
+}
+
 /* This function returns top_tag_type for use with tag_operations, it will also
  * populate nfc_info (if provided) */
 uint8_t NFCSensor::ExportTag(uint16_t tag_tech_type, NFCInfo *nfc_info) {
     uint8_t top_tag_type = 0;
     if (nfc_info) {
         nfc_info->Reset();
+        // TODO: Clean up DescCardType function
         nfc_info->card_type = DescCardType(peer_info.dwActivatedType);
     }
     uint8_t identify_tag;
@@ -301,13 +336,6 @@ uint8_t NFCSensor::ExportTag(uint16_t tag_tech_type, NFCInfo *nfc_info) {
                 case PHAC_DISCLOOP_TYPEA_TYPE2_TAG_CONFIG_MASK: {
                     if (nfc_info) nfc_info->type = "2";
                     top_tag_type = PHAL_TOP_TAG_TYPE_T2T_TAG;
-                    // TODO: look into this
-                    // TODO: This is for testing only, remove
-                    // uint8_t tmp[8];
-                    // phalMful_GetVersion(&al_mful, tmp);
-                    // cout << "MFUL Data" << endl;
-                    // std::vector<uint8_t> vec(tmp, tmp + 8);
-                    // cout << NFCData::StrHexByteVec(vec) << endl;
                 } break;
                 case PHAC_DISCLOOP_TYPEA_TYPE4A_TAG_CONFIG_MASK:
                     if (nfc_info) nfc_info->type = "4A";

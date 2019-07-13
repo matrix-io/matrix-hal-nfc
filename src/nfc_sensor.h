@@ -65,6 +65,19 @@ class NFCSensor {
         pal_iso14443p4;  // Protocol Abstraction Layer ISO I14443-4 component
     phacDiscLoop_Sw_DataParams_t*
         discovery_loop;  // Application Layer Discovery Loop component
+    // Keystore and Crypto components
+    uint16_t key_entires_amount = 10;
+    uint16_t key_version_pairs_amount = 10;
+    uint16_t KUC_entries_amount = 10;
+    phKeyStore_Sw_DataParams_t keystore;
+    std::vector<phKeyStore_Sw_KeyEntry_t> key_entries =
+        std::vector<phKeyStore_Sw_KeyEntry_t>(key_entires_amount);
+    std::vector<phKeyStore_Sw_KeyVersionPair_t> key_version_pairs =
+        std::vector<phKeyStore_Sw_KeyVersionPair_t>(key_version_pairs_amount);
+    std::vector<phKeyStore_Sw_KUCEntry_t> KUC_entries =
+        std::vector<phKeyStore_Sw_KUCEntry_t>(KUC_entries_amount);
+    phCryptoSym_Sw_DataParams_t crypto_sym;
+    phCryptoRng_Sw_DataParams_t crypto_rng;
     // NFC Standard Lib Components (Adding additional functionality)
     phpalMifare_Sw_DataParams_t
         pal_mifare;  // Protocol Abstraction Layer Mifare component
@@ -109,6 +122,7 @@ class NFCSensor {
     MFUL mful = MFUL(this);
     NTAG ntag = NTAG(this);
     // Begin Helper Functions
+    std::string GetCardIC(NFCInfo* nfc_info);
     uint8_t ExportTag(uint16_t tag_tech_type, NFCInfo* nfc_info);
     // End Helper Functions
 };
