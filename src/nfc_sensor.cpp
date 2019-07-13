@@ -132,6 +132,7 @@ int NFCSensor::Deactivate() {
  */
 int NFCSensor::ReadInfo(NFCInfo *nfc_info) {
     nfc_info->recently_updated = false;
+    GetCardIC(nfc_info);
     uint16_t tag_tech_type = 0;
     // Hook into the discovery loop and pull UID/AQT(A/B)/SAK/Type from there
     nfc_lib_status = phacDiscLoop_GetConfig(
@@ -283,20 +284,51 @@ int NFCSensor::MFUL::ReadData(NFCData *nfc_data) {
 
 /* *********************** PRIVATE FUNCTIONS ************************ */
 
-/* https://stackoverflow.com/questions/37002498/distinguish-ntag213-from-mf0icu2
- */
 std::string NFCSensor::GetCardIC(NFCInfo *nfc_info) {
     if (peer_info.dwActivatedType == E_PH_NFCLIB_MIFARE_ULTRALIGHT) {
-        // TODO: look into this
-        // TODO: This is for testing only, remove
+        // TODO: integrate with nfc_info, get additional tag info (tuple?)
         std::vector<uint8_t> version_info = std::vector<uint8_t>(8);
         nfc_lib_status = phalMful_GetVersion(&al_mful, version_info.data());
         if (nfc_lib_status != PH_ERR_SUCCESS) {
             // First generation tag
+            nfc_lib_status = phalMful_UlcAuthenticate(&al_mful, 0, 0);
+            if ((nfc_lib_status == (PH_ERR_SUCCESS)) ||
+                (nfc_lib_status == (PH_ERR_AUTH_ERROR))) {
+                // Mifare Ultralight C
+                std::cout << nfc_lib_status << " | MF0ICU2" << std::endl;
+            } else {
+                // Either Mifare Ultralight or NTAG203
+                // Only NTAG203 has page 41
+                if (ntag.ReadPage(41).empty()) {
+                    // Must be Mifare Ultralight
+                    std::cout << "MF0ICU1" << std::endl;
+                } else {
+                    // Must be NTAG203
+                    std::cout << "NTAG203" << std::endl;
+                }
+            }
+        } else {
+            // Tag is EV1 or later
+            uint8_t type = version_info[2];
+            uint8_t subtype = version_info[3];
+            uint8_t major_version = version_info[4];
+            uint8_t minor_version = version_info[5];
+            uint8_t storage_size = version_info[6];
+            std::vector<uint8_t> IC_info = {type, subtype, major_version,
+                                            minor_version, storage_size};
+            for (auto p : IC_list) {
+                if (IC_info == p.second) {
+                    std::cout << p.first << std::endl;
+                    break;
+                }
+            }
+            // TODO: Decode EV1 or later tags
+            // TODO: populate nfc_info with size and IC.
+            std::cout << "MFUL Data" << std::endl;
+            std::cout << NFCData::StrHexByteVec(version_info) << std::endl;
         }
-        cout << "MFUL Data" << endl;
-        cout << NFCData::StrHexByteVec(version_info) << endl;
     }
+    return "WIP";
 }
 
 /* This function returns top_tag_type for use with tag_operations, it will also
