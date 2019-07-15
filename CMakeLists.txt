@@ -38,6 +38,7 @@ set(matrix_hal_nfc_headers
 
 set (matrix_hal_nfc_src
 ./src/nfc_sensor.cpp
+./src/nfc_types.cpp
 )
 
 add_library(matrix_hal_nfc SHARED ${matrix_hal_nfc_src})
