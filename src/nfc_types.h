@@ -4,7 +4,7 @@
 #define MATRIX_HAL_NFC_TYPES_H
 
 #include <string>
-#include <utility>
+#include <tuple>
 #include <vector>
 
 // This MUST be included last!
@@ -30,7 +30,7 @@ NXP library error. Errors are handled this way so that end user can do `cout <<
 DescStatus(FunctionName())` and get the error logged. */
 std::string DescStatus(int status_type);
 
-std::string DescCardType(uint16_t activated_type);
+std::string DescCardFamily(uint16_t activated_type);
 
 // For detecting card IC
 // https://stackoverflow.com/questions/37002498/distinguish-ntag213-from-mf0icu2
@@ -54,7 +54,10 @@ extern std::vector<uint8_t> MF0UL1101;
 extern std::vector<uint8_t> MF0ULH1101;
 extern std::vector<uint8_t> MF0UL2101;
 extern std::vector<uint8_t> MF0ULH2101;
-extern std::vector<std::pair<std::string, std::vector<uint8_t>>> IC_list;
+// +------------+------+---------+-----------+--------------+
+// {Identification Info, IC Name, User Storage Size (Bytes)}
+extern std::vector<std::tuple<std::vector<uint8_t>, std::string, uint32_t>>
+    IC_list;
 }  // namespace matrix_hal
 
 #endif  // MATRIX_HAL_NFC_TYPES_H

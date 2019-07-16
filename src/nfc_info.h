@@ -18,7 +18,9 @@ class NFCInfo {
     int bit_rate = -1;
     std::string technology = "null";
     std::string type = "null";
-    std::string card_type = "null";
+    std::string card_family = "null";
+    std::string IC_type = "null";
+    int storage_size = -1;
 
     // HELPER FUNCTIONS
     void Reset() {
@@ -30,7 +32,9 @@ class NFCInfo {
         bit_rate = -1;
         technology = "null";
         type = "null";
-        card_type = "null";
+        card_family = "null";
+        IC_type = "null";
+        storage_size = -1;
     }
 
     std::string StrHexUID() {
@@ -72,7 +76,12 @@ class NFCInfo {
         ret << "UID : " << StrHexUID() << std::endl;
         ret << "ATQ(A/B) : " << StrHexATQ() << std::endl;
         ret << "SAK : " << StrHexSAK() << std::endl;
-        ret << "Card Type : " << card_type << std::flush;
+        if (bit_rate != -1)
+            ret << "Bit Rate :" << bit_rate << " baud" << std::endl;
+        ret << "Card Family : " << card_family << std::endl;
+        ret << "IC Type : " << IC_type << std::endl;
+        if (storage_size != -1)
+            ret << "Storage Size : " << storage_size << " bytes" << std::flush;
         return ret.str();
     }
 };

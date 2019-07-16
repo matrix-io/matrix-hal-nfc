@@ -153,7 +153,6 @@ int NFCSensor::Deactivate() {
  */
 int NFCSensor::ReadInfo(NFCInfo *nfc_info) {
     nfc_info->recently_updated = false;
-    GetCardIC(nfc_info);
     uint16_t tag_tech_type = 0;
     // Hook into the discovery loop and pull UID/AQT(A/B)/SAK/Type from there
     nfc_lib_status = phacDiscLoop_GetConfig(
@@ -189,6 +188,7 @@ int NFCSensor::ReadNDEF(NFC_NDEF *nfc_ndef) {
         discovery_loop, PHAC_DISCLOOP_CONFIG_TECH_DETECTED, &tag_tech_type);
     if (nfc_lib_status != PH_ERR_SUCCESS || tag_tech_type == 0)
         return -nfc_lib_status;
+    nfc_ndef->Reset();
     top_tag_type = ExportTag(tag_tech_type, nullptr);
     if (top_tag_type == PHAL_TOP_TAG_TYPE_T4T_TAG) {
         // NXP does this before reading NDEF from a T4 Tag, this may possibly
@@ -209,7 +209,6 @@ int NFCSensor::ReadNDEF(NFC_NDEF *nfc_ndef) {
                                      CID_enabled, CID, NAD_supported, NAD, FWI,
                                      FSDI, FSCI);
     }
-    nfc_ndef->Reset();
     /* Configure Top layer for specified tag type */
     nfc_lib_status = phalTop_SetConfig(&tag_operations,
                                        PHAL_TOP_CONFIG_TAG_TYPE, top_tag_type);
@@ -227,6 +226,8 @@ int NFCSensor::ReadNDEF(NFC_NDEF *nfc_ndef) {
     // TODO: Fix error handling
     return -nfc_lib_status;
 }
+
+int NFCSensor::WriteNDEF(NFC_NDEF *nfc_ndef) { return 0; }
 
 /* This will read a single specified page (Card must already have been
  * activated!) If card is not activated or read fails the vector will be empty.
@@ -316,16 +317,20 @@ std::string NFCSensor::GetCardIC(NFCInfo *nfc_info) {
             if ((nfc_lib_status == (PH_ERR_SUCCESS)) ||
                 (nfc_lib_status == (PH_ERR_AUTH_ERROR))) {
                 // Mifare Ultralight C
-                std::cout << nfc_lib_status << " | MF0ICU2" << std::endl;
+                nfc_info->IC_type = "MF0ICU2";
+                nfc_info->storage_size = 144;
+
             } else {
                 // Either Mifare Ultralight or NTAG203
                 // Only NTAG203 has page 41
                 if (ntag.ReadPage(41).empty()) {
                     // Must be Mifare Ultralight
-                    std::cout << "MF0ICU1" << std::endl;
+                    nfc_info->IC_type = "MF0ICU1";
+                    nfc_info->storage_size = 48;
                 } else {
                     // Must be NTAG203
-                    std::cout << "NTAG203" << std::endl;
+                    nfc_info->IC_type = "NTAG203";
+                    nfc_info->storage_size = 144;
                 }
             }
         } else {
@@ -337,19 +342,19 @@ std::string NFCSensor::GetCardIC(NFCInfo *nfc_info) {
             uint8_t storage_size = version_info[6];
             std::vector<uint8_t> IC_info = {type, subtype, major_version,
                                             minor_version, storage_size};
-            for (auto p : IC_list) {
-                if (IC_info == p.second) {
-                    std::cout << p.first << std::endl;
+            for (auto t : IC_list) {
+                if (IC_info == std::get<0>(t)) {
+                    nfc_info->IC_type = std::get<1>(t);
+                    nfc_info->storage_size = std::get<2>(t);
                     break;
                 }
             }
-            // TODO: Decode EV1 or later tags
-            // TODO: populate nfc_info with size and IC.
-            std::cout << "MFUL Data" << std::endl;
-            std::cout << NFCData::StrHexByteVec(version_info) << std::endl;
         }
+    } else {
+        nfc_info->IC_type = "unknown";
+        nfc_info->storage_size = -1;
     }
-    return "WIP";
+    return nfc_info->IC_type;
 }
 
 /* This function returns top_tag_type for use with tag_operations, it will also
@@ -359,7 +364,8 @@ uint8_t NFCSensor::ExportTag(uint16_t tag_tech_type, NFCInfo *nfc_info) {
     if (nfc_info) {
         nfc_info->Reset();
         // TODO: Clean up DescCardType function
-        nfc_info->card_type = DescCardType(peer_info.dwActivatedType);
+        nfc_info->card_family = DescCardFamily(peer_info.dwActivatedType);
+        GetCardIC(nfc_info);
     }
     uint8_t identify_tag;
     if (PHAC_DISCLOOP_CHECK_ANDMASK(tag_tech_type,

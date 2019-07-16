@@ -146,7 +146,7 @@ std::string DescStatus(int status_type) {
     }
 }
 
-std::string DescCardType(uint16_t activated_type) {
+std::string DescCardFamily(uint16_t activated_type) {
     switch (activated_type) {
         case E_PH_NFCLIB_MIFARE_CLASSIC_1K:
             return "Mifare Classic 1K";
@@ -180,7 +180,7 @@ std::string DescCardType(uint16_t activated_type) {
 
 // For detecting card IC
 // https://stackoverflow.com/questions/37002498/distinguish-ntag213-from-mf0icu2
-// {Chip, Type, Subtype, Major Version, Minor Version, Storage Size}
+// {Type, Subtype, Major Version, Minor Version, Storage Size}
 std::vector<uint8_t> NTAG210 = {0x04, 0x01, 0x01, 0x00, 0x0B};
 std::vector<uint8_t> NTAG212 = {0x04, 0x01, 0x01, 0x00, 0x0E};
 std::vector<uint8_t> NTAG213 = {0x04, 0x02, 0x01, 0x00, 0x0F};
@@ -200,14 +200,17 @@ std::vector<uint8_t> MF0UL1101 = {0x03, 0x01, 0x01, 0x00, 0x0B};
 std::vector<uint8_t> MF0ULH1101 = {0x03, 0x02, 0x01, 0x00, 0x0B};
 std::vector<uint8_t> MF0UL2101 = {0x03, 0x01, 0x01, 0x00, 0x0E};
 std::vector<uint8_t> MF0ULH2101 = {0x03, 0x02, 0x01, 0x00, 0x0E};
-std::vector<std::pair<std::string, std::vector<uint8_t>>> IC_list = {
-    {"NTAG210", NTAG210},       {"NTAG212", NTAG212},
-    {"NTAG213", NTAG213},       {"NTAG213F", NTAG213F},
-    {"NTAG215", NTAG215},       {"NTAG216", NTAG216},
-    {"NTAG216F", NTAG216F},     {"NT3H1101", NT3H1101},
-    {"NT3H1101W0", NT3H1101W0}, {"NT3H2111W0", NT3H2111W0},
-    {"NT3H2101", NT3H2101},     {"NT3H1201W0", NT3H1201W0},
-    {"NT3H2211W0", NT3H2211W0}, {"MF0UL1101", MF0UL1101},
-    {"MF0ULH1101", MF0ULH1101}, {"MF0UL2101", MF0UL2101},
-    {"MF0ULH2101", MF0ULH2101}};
+// +------------+------+---------+-----------+--------------+
+// {Identification Info, IC Name, User Storage Size (Bytes)}
+std::vector<std::tuple<std::vector<uint8_t>, std::string, uint32_t>> IC_list = {
+    {NTAG210, "NTAG210", 48},         {NTAG212, "NTAG212", 128},
+    {NTAG213, "NTAG213", 144},        {NTAG213F, "NTAG213F", 144},
+    {NTAG215, "NTAG215", 504},        {NTAG216, "NTAG216", 888},
+    {NTAG216F, "NTAG216F", 888},      {NT3H1101, "NT3H1101", 888},
+    {NT3H1101W0, "NT3H1101W0", 888},  {NT3H2111W0, "NT3H2111W0", 1912},
+    {NT3H2101, "NT3H2101", 888},      {NT3H1201W0, "NT3H1201W0", 1904},
+    {NT3H2211W0, "NT3H2211W0", 1912}, {MF0UL1101, "MF0UL1101", 48},
+    {MF0ULH1101, "MF0ULH1101", 48},   {MF0UL2101, "MF0UL2101", 128},
+    {MF0ULH2101, "MF0ULH2101", 128}};
+
 }  // namespace matrix_hal
