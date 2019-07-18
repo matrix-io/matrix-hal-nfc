@@ -190,6 +190,9 @@ int NFCSensor::ReadNDEF(NFC_NDEF *nfc_ndef) {
         return -nfc_lib_status;
     nfc_ndef->Reset();
     top_tag_type = ExportTag(tag_tech_type, nullptr);
+    /* Configure Top layer for specified tag type */
+    nfc_lib_status = phalTop_SetConfig(&tag_operations,
+                                       PHAL_TOP_CONFIG_TAG_TYPE, top_tag_type);
     if (top_tag_type == PHAL_TOP_TAG_TYPE_T4T_TAG) {
         // NXP does this before reading NDEF from a T4 Tag, this may possibly
         // not be correct...
@@ -209,9 +212,7 @@ int NFCSensor::ReadNDEF(NFC_NDEF *nfc_ndef) {
                                      CID_enabled, CID, NAD_supported, NAD, FWI,
                                      FSDI, FSCI);
     }
-    /* Configure Top layer for specified tag type */
-    nfc_lib_status = phalTop_SetConfig(&tag_operations,
-                                       PHAL_TOP_CONFIG_TAG_TYPE, top_tag_type);
+
     /* Check for NDEF presence */
     nfc_lib_status = phalTop_CheckNdef(&tag_operations, &top_tag_state);
     if ((top_tag_state == PHAL_TOP_STATE_READONLY) ||
@@ -227,11 +228,58 @@ int NFCSensor::ReadNDEF(NFC_NDEF *nfc_ndef) {
     return -nfc_lib_status;
 }
 
-int NFCSensor::WriteNDEF(NFC_NDEF *nfc_ndef) { return 0; }
+int NFCSensor::WriteNDEF(NFC_NDEF *nfc_ndef) {
+    uint16_t tag_tech_type = 0;
+    uint8_t top_tag_type = 0;
+    uint8_t top_tag_state = 0;
+    uint16_t ndef_length = 0;
+    nfc_lib_status = phacDiscLoop_GetConfig(
+        discovery_loop, PHAC_DISCLOOP_CONFIG_TECH_DETECTED, &tag_tech_type);
+    if (nfc_lib_status != PH_ERR_SUCCESS || tag_tech_type == 0)
+        return -nfc_lib_status;
+    top_tag_type = ExportTag(tag_tech_type, nullptr);
+    /* Configure Top layer for specified tag type */
+    nfc_lib_status = phalTop_SetConfig(&tag_operations,
+                                       PHAL_TOP_CONFIG_TAG_TYPE, top_tag_type);
+    /* Check for NDEF presence */
+    nfc_lib_status = phalTop_CheckNdef(&tag_operations, &top_tag_state);
+    if (nfc_lib_status != PH_ERR_SUCCESS) {
+        // Format NDEF Required
+        nfc_lib_status = phalTop_FormatNdef(&tag_operations);
+    }
+    nfc_lib_status =
+        phalTop_WriteNdef(&tag_operations, nfc_ndef->read_ndef.data(),
+                          nfc_ndef->read_ndef.size());
+
+    return 0;
+}
+
+int NFCSensor::EraseNDEF() {
+    uint16_t tag_tech_type = 0;
+    uint8_t top_tag_type = 0;
+    uint8_t top_tag_state = 0;
+    uint16_t ndef_length = 0;
+    nfc_lib_status = phacDiscLoop_GetConfig(
+        discovery_loop, PHAC_DISCLOOP_CONFIG_TECH_DETECTED, &tag_tech_type);
+    if (nfc_lib_status != PH_ERR_SUCCESS || tag_tech_type == 0)
+        return -nfc_lib_status;
+    top_tag_type = ExportTag(tag_tech_type, nullptr);
+    /* Configure Top layer for specified tag type */
+    nfc_lib_status = phalTop_SetConfig(&tag_operations,
+                                       PHAL_TOP_CONFIG_TAG_TYPE, top_tag_type);
+    /* Check for NDEF presence */
+    nfc_lib_status = phalTop_CheckNdef(&tag_operations, &top_tag_state);
+    if (nfc_lib_status != PH_ERR_SUCCESS) {
+        // Format NDEF Required
+        nfc_lib_status = phalTop_FormatNdef(&tag_operations);
+    }
+    nfc_lib_status = phalTop_EraseNdef(&tag_operations);
+    return 0;
+}
 
 /* This will read a single specified page (Card must already have been
- * activated!) If card is not activated or read fails the vector will be empty.
- * page_number can be 0x00 - 0xFF depending upon card layout
+ * activated!) If card is not activated or read fails the vector will be
+ * empty. page_number can be 0x00 - 0xFF depending upon card layout
  */
 std::vector<uint8_t> NFCSensor::MFUL::ReadPage(uint8_t page_number) {
     if (nfc_sensor->peer_info.dwActivatedType != E_PH_NFCLIB_MIFARE_ULTRALIGHT)
@@ -253,11 +301,12 @@ std::vector<uint8_t> NFCSensor::MFUL::ReadPage(uint8_t page_number) {
         phNfcLib_Receive(&nfc_sensor->data_buffer[0], &bytes_read,
                          &nfc_sensor->more_data_available);
 
-    /* The status should be success and the number of bytes received should be
-     * 16 for MFUL/NTAG cards */
+    /* The status should be success and the number of bytes received should
+     * be 16 for MFUL/NTAG cards */
     if ((nfc_sensor->nfc_lib_status != PH_NFCLIB_STATUS_SUCCESS) ||
         (bytes_read != 16)) {
-        // cerr << "Read for Block " << +page_number << " failed..." << endl;
+        // cerr << "Read for Block " << +page_number << " failed..." <<
+        // endl;
         return std::vector<uint8_t>();
     }
     return std::vector<uint8_t>(nfc_sensor->data_buffer,
@@ -278,8 +327,8 @@ int NFCSensor::MFUL::WritePage(uint8_t page_number,
         MFUL_Write;
     /* Transmit will execute the command */
     nfc_sensor->nfc_lib_status = phNfcLib_Transmit(
-        &nfc_sensor->nfc_lib_transmit, 0x04 /* For MFUL/NTAG the size of a page
-                                         to be written is 4 bytes */
+        &nfc_sensor->nfc_lib_transmit, 0x04 /* For MFUL/NTAG the size of a
+                                         page to be written is 4 bytes */
     );
     return nfc_sensor->nfc_lib_status;
 }
@@ -357,8 +406,8 @@ std::string NFCSensor::GetCardIC(NFCInfo *nfc_info) {
     return nfc_info->IC_type;
 }
 
-/* This function returns top_tag_type for use with tag_operations, it will also
- * populate nfc_info (if provided) */
+/* This function returns top_tag_type for use with tag_operations, it will
+ * also populate nfc_info (if provided) */
 uint8_t NFCSensor::ExportTag(uint16_t tag_tech_type, NFCInfo *nfc_info) {
     uint8_t top_tag_type = 0;
     if (nfc_info) {

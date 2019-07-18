@@ -81,6 +81,7 @@ class NFCSensor {
     int SimpleReadInfo(NFCInfo* nfc_info);
     int ReadNDEF(NFC_NDEF* nfc_ndef);
     int WriteNDEF(NFC_NDEF* nfc_ndef);
+    int EraseNDEF();
     // Card specific functions reside in their corresponding classes
     // Functions for Mifare Ultralight Cards
     class MFUL {
