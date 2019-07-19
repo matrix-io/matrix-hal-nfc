@@ -1,26 +1,28 @@
 // NOTE: This file integrates with the NXP NFC Reader Library v4.040.05
 
-#ifndef MATRIX_HAL_NFC_TYPES_H
-#define MATRIX_HAL_NFC_TYPES_H
+#ifndef MATRIX_HAL_NFC_UTILITY_H
+#define MATRIX_HAL_NFC_UTILITY_H
 
 #include <string>
 #include <tuple>
+#include <utility>
 #include <vector>
 
-// This MUST be included last!
-extern "C" {
-#include <matrix_nfc/nxp_nfc/NxpNfcRdLib/intfs/phNfcLib.h>
-// TODO: Refine include statements and organize by type
-#include <matrix_nfc/nxp_nfc/NxpNfcRdLib/intfs/phCryptoRng.h>
-#include <matrix_nfc/nxp_nfc/NxpNfcRdLib/intfs/phCryptoSym.h>
-#include <matrix_nfc/nxp_nfc/NxpNfcRdLib/intfs/phalFelica.h>
-#include <matrix_nfc/nxp_nfc/NxpNfcRdLib/intfs/phalMfc.h>
-#include <matrix_nfc/nxp_nfc/NxpNfcRdLib/intfs/phalTop.h>
-#include <matrix_nfc/nxp_nfc/NxpNfcRdLib/intfs/phpalFelica.h>
-#include <matrix_nfc/nxp_nfc/NxpNfcRdLib/types/ph_Status.h>
-}
+#include "nfc_info.h"
+#include "nfc_init.h"
 
 namespace matrix_hal {
+
+class NFCUtility {
+   public:
+    NFCInit* nfc_init;
+    NFCUtility(NFCInit* nfc_init) : nfc_init(nfc_init){};
+    std::pair<std::string, int> GetCardIC();
+    uint8_t ExportTag(uint16_t tag_tech_type, NFCInfo* nfc_info);
+};
+
+// TODO : REFACTOR BELOW
+
 #define INCORRECT_CARD_FOR_FUNCTION 0x377
 // Errors from the standard NXP library, not simplfied NXP library.
 std::string DescPhStatus(int status_type);
@@ -58,6 +60,7 @@ extern std::vector<uint8_t> MF0ULH2101;
 // {Identification Info, IC Name, User Storage Size (Bytes)}
 extern std::vector<std::tuple<std::vector<uint8_t>, std::string, uint32_t>>
     IC_list;
+
 }  // namespace matrix_hal
 
-#endif  // MATRIX_HAL_NFC_TYPES_H
+#endif  // MATRIX_HAL_NFC_UTILITY_H

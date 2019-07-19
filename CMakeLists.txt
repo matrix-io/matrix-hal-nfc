@@ -33,16 +33,18 @@ set(matrix_hal_nfc_headers
 ./src/nfc_info.h
 ./src/nfc_ndef.h
 ./src/nfc_sensor.h
-./src/nfc_types.h
-./src/third_party/ndef_parse/NdefMessage.h
-./src/third_party/ndef_parse/NdefRecord.h
+./src/nfc_init.h
+./src/nfc_utility.h
+./src/ndef/ndef_parse/NdefMessage.h
+./src/ndef/ndef_parse/NdefRecord.h
 )
 
 set (matrix_hal_nfc_src
 ./src/nfc_sensor.cpp
-./src/nfc_types.cpp
-./src/third_party/ndef_parse/NdefMessage.cpp
-./src/third_party/ndef_parse/NdefRecord.cpp
+./src/nfc_init.cpp
+./src/nfc_utility.cpp
+./src/ndef/ndef_parse/NdefMessage.cpp
+./src/ndef/ndef_parse/NdefRecord.cpp
 )
 
 add_library(matrix_hal_nfc SHARED ${matrix_hal_nfc_src})
