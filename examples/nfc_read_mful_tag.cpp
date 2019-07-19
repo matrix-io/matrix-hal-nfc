@@ -41,7 +41,7 @@ int main() {
         nfc_sensor.Deactivate();
 
         if (nfc_data.recently_updated) {
-            cout << nfc_data.StrHex() << endl << endl;
+            cout << nfc_data.ToHex() << endl << endl;
             for (hal::LedValue &led : everloop_image.leds) {
                 led.red = 0;
                 led.green = 20;
