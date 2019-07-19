@@ -1,5 +1,5 @@
-#ifndef MATRIX_HAL_NFC_NDEF_H
-#define MATRIX_HAL_NFC_NDEF_H
+#ifndef MATRIX_HAL_NFC_NDEF_D_H
+#define MATRIX_HAL_NFC_NDEF_D_H
 
 #include <cstdint>
 #include <iomanip>
@@ -70,4 +70,4 @@ class NFC_NDEF {
 
 }  // namespace matrix_hal
 
-#endif  // MATRIX_HAL_NFC_NDEF_H
+#endif  // MATRIX_HAL_NFC_NDEF_D_H

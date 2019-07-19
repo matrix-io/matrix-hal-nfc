@@ -31,7 +31,7 @@ int writeToNewTag(hal::NFCSensor *nfc_sensor, hal::NFC_NDEF *nfc_ndef) {
 
     nfc_ndef->read_ndef = std::vector<uint8_t>(message.getEncodedSize());
     message.encode(nfc_ndef->read_ndef.data());
-    nfc_sensor->WriteNDEF(nfc_ndef);
+    nfc_sensor->ndef.WriteNDEF(nfc_ndef);
     cout << "Wrote to new Tag" << endl;
     nfc_sensor->Deactivate();
     return 0;
@@ -55,7 +55,7 @@ int main() {
 
     do {
         nfc_sensor.Activate();
-        nfc_sensor.ReadNDEF(&nfc_ndef);
+        nfc_sensor.ndef.ReadNDEF(&nfc_ndef);
         nfc_sensor.Deactivate();
 
         if (nfc_ndef.recently_updated && nfc_ndef.ndef_detected) {

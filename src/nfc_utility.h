@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "nfc_info.h"
+
 #include "nfc_init.h"
 
 namespace matrix_hal {

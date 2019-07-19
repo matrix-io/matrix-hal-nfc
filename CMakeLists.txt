@@ -35,6 +35,9 @@ set(matrix_hal_nfc_headers
 ./src/nfc_sensor.h
 ./src/nfc_init.h
 ./src/nfc_utility.h
+./src/cards/mful.h
+./src/cards/ntag.h
+./src/ndef/ndef.h
 ./src/ndef/ndef_parse/NdefMessage.h
 ./src/ndef/ndef_parse/NdefRecord.h
 )
@@ -43,6 +46,9 @@ set (matrix_hal_nfc_src
 ./src/nfc_sensor.cpp
 ./src/nfc_init.cpp
 ./src/nfc_utility.cpp
+./src/cards/mful.cpp
+./src/cards/ntag.cpp
+./src/ndef/ndef.cpp
 ./src/ndef/ndef_parse/NdefMessage.cpp
 ./src/ndef/ndef_parse/NdefRecord.cpp
 )

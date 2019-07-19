@@ -37,7 +37,7 @@ int main() {
 
     do {
         nfc_sensor.Activate();
-        nfc_sensor.ReadNDEF(&nfc_ndef);
+        nfc_sensor.ndef.ReadNDEF(&nfc_ndef);
         nfc_sensor.Deactivate();
 
         if (nfc_ndef.recently_updated) {

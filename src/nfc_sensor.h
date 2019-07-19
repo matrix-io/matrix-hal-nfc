@@ -10,8 +10,14 @@
 #include "nfc_info.h"
 #include "nfc_ndef.h"
 
-#include "nfc_init.h"
+#include "cards/mful.h"
+#include "cards/ntag.h"
+
+#include "ndef/ndef.h"
+
 #include "nfc_utility.h"
+
+#include "nfc_init.h"
 
 namespace matrix_hal {
 
@@ -19,37 +25,14 @@ class NFCSensor {
    public:
     NFCInit nfc_init = NFCInit();
     NFCUtility nfc_utility = NFCUtility(&nfc_init);
-    // Begin User Functions
-    NFCSensor();
-    ~NFCSensor();
+    NDEF ndef = NDEF(&nfc_init, &nfc_utility);
+    MFUL mful = MFUL(&nfc_init, &nfc_utility);
+    NTAG ntag = NTAG(&nfc_init, &nfc_utility);
+    // Begin User Functions for all
     int Activate();
     int Deactivate();
     int ReadInfo(NFCInfo* nfc_info);
     int SimpleReadInfo(NFCInfo* nfc_info);
-    int ReadNDEF(NFC_NDEF* nfc_ndef);
-    int WriteNDEF(NFC_NDEF* nfc_ndef);
-    int EraseNDEF();
-    // Card specific functions reside in their corresponding classes
-    // Functions for Mifare Ultralight Cards
-    class MFUL {
-       public:
-        NFCSensor* nfc_sensor;
-        MFUL(NFCSensor* nfc_sensor) : nfc_sensor(nfc_sensor){};
-        std::vector<uint8_t> ReadPage(uint8_t page_number);
-        int WritePage(uint8_t page_number, std::vector<uint8_t>& write_data);
-        int ReadData(NFCData* nfc_data);
-    };
-    //   Functions for NDEF Cards
-    //   Read and Write are identical to MFUL
-    class NTAG : public MFUL {
-       public:
-        NTAG(NFCSensor* nfc_sensor) : MFUL(nfc_sensor){};
-    };
-    // End User Functions
-    // Instantiate above subclasses
-    MFUL mful = MFUL(this);
-    NTAG ntag = NTAG(this);
-    // End Helper Functions
 };
 
 }  // namespace matrix_hal
