@@ -1,9 +1,11 @@
 #ifndef MATRIX_HAL_NFC_DATA_H
 #define MATRIX_HAL_NFC_DATA_H
 
-#include "info_content.h"
-#include "ndef_content.h"
-#include "pages_content.h"
+#include "data/info_content.h"
+#include "data/ndef_content.h"
+#include "data/pages_content.h"
+
+#include "ndef/ndef_parse/NdefMessage.h"
 
 namespace matrix_hal {
 class NFCData {

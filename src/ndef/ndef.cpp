@@ -42,7 +42,7 @@ int NDEF::ReadNDEF(NDEFContent *ndef_content) {
         phalTop_CheckNdef(&nfc_init->tag_operations, &top_tag_state);
     if ((top_tag_state == PHAL_TOP_STATE_READONLY) ||
         (top_tag_state == PHAL_TOP_STATE_READWRITE)) {
-        ndef_content->ndef_detected = true;
+        ndef_content->valid = true;
         // Read NDEF message
         nfc_init->nfc_lib_status = phalTop_ReadNdef(
             &nfc_init->tag_operations, nfc_init->data_buffer, &ndef_length);

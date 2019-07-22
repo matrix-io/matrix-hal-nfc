@@ -43,19 +43,4 @@ int NFC::ReadInfo(InfoContent *nfc_info) {
     return nfc_init.nfc_lib_status;
 }
 
-/* This will activate, read and populate info data, then deactivate card */
-int NFC::SimpleReadInfo(InfoContent *nfc_info) {
-    nfc_info->recently_updated = false;
-    nfc_init.nfc_lib_status = Activate();
-    if (nfc_init.nfc_lib_status != PH_NFCLIB_STATUS_PEER_ACTIVATION_DONE)
-        return nfc_init.nfc_lib_status;
-    nfc_init.nfc_lib_status = ReadInfo(nfc_info);
-    // If already errored at ReadInfo then return the error from ReadInfo
-    if (nfc_init.nfc_lib_status < 0)
-        Deactivate();
-    else
-        nfc_init.nfc_lib_status = Deactivate();
-    return nfc_init.nfc_lib_status;
-}
-
 }  // namespace matrix_hal

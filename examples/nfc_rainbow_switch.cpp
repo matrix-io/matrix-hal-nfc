@@ -34,7 +34,9 @@ int main() {
     std::cout << "Scan ON/OFF Tag" << std::endl;
     while (true) {
         if (nfc_data.info.recently_updated) break;
-        nfc.SimpleReadInfo(&nfc_data.info);
+        nfc.Activate();
+        nfc.ReadInfo(&nfc_data.info);
+        nfc.Deactivate();
     }
     switchUID = nfc_data.info.UIDToHex();
 
@@ -45,7 +47,9 @@ int main() {
 
     do {
         auto start = chrono::steady_clock::now();
-        nfc.SimpleReadInfo(&nfc_data.info);
+        nfc.Activate();
+        nfc.ReadInfo(&nfc_data.info);
+        nfc.Deactivate();
         auto end = chrono::steady_clock::now();
         auto diff = end - start;
         cout << chrono::duration<double, milli>(diff).count() << " ms" << endl;

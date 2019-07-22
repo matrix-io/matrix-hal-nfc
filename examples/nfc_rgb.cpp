@@ -33,7 +33,9 @@ int main() {
     std::cout << "Scan Red Tag" << std::endl;
     while (true) {
         if (nfc_data.info.recently_updated) break;
-        nfc.SimpleReadInfo(&nfc_data.info);
+        nfc.Activate();
+        nfc.ReadInfo(&nfc_data.info);
+        nfc.Deactivate();
     }
     red_UID = nfc_data.info.UIDToHex();
 
@@ -45,7 +47,9 @@ int main() {
         if (nfc_data.info.recently_updated &&
             nfc_data.info.UIDToHex() != red_UID)
             break;
-        nfc.SimpleReadInfo(&nfc_data.info);
+        nfc.Activate();
+        nfc.ReadInfo(&nfc_data.info);
+        nfc.Deactivate();
     }
     green_UID = nfc_data.info.UIDToHex();
 
@@ -58,7 +62,9 @@ int main() {
             nfc_data.info.UIDToHex() != red_UID &&
             nfc_data.info.UIDToHex() != green_UID)
             break;
-        nfc.SimpleReadInfo(&nfc_data.info);
+        nfc.Activate();
+        nfc.ReadInfo(&nfc_data.info);
+        nfc.Deactivate();
     }
     blue_UID = nfc_data.info.UIDToHex();
 
@@ -67,7 +73,9 @@ int main() {
     std::cout << "\nScan specified tags to activate Everloop" << std::endl;
 
     do {
-        nfc.SimpleReadInfo(&nfc_data.info);
+        nfc.Activate();
+        nfc.ReadInfo(&nfc_data.info);
+        nfc.Deactivate();
 
         if (nfc_data.info.recently_updated) {
             std::string curr_UID = nfc_data.info.UIDToHex();

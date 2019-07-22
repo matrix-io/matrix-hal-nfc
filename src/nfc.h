@@ -32,7 +32,6 @@ class NFC {
     int Activate();
     int Deactivate();
     int ReadInfo(InfoContent* nfc_info);
-    int SimpleReadInfo(InfoContent* nfc_info);
 };
 
 }  // namespace matrix_hal

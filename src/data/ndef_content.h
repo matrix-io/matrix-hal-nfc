@@ -12,7 +12,7 @@ namespace matrix_hal {
 class NDEFContent {
    public:
     bool recently_updated = false;
-    bool ndef_detected = false;
+    bool valid = false;
     // Raw NDEF message read from the NFC Tag
     std::vector<uint8_t> content;
 
@@ -20,7 +20,7 @@ class NDEFContent {
     void Reset() {
         // Reset parameters before populating with info from new object
         recently_updated = true;
-        ndef_detected = false;
+        valid = false;
         content.clear();
     }
 
@@ -38,7 +38,8 @@ class NDEFContent {
     }
 
     std::string ToString() {
-        if (content.empty()) return "";
+        if (valid == false) return "NDEF is Not Detected";
+        if (content.empty()) return "NDEF is NULL";
         std::stringstream result;
         for (uint8_t i : content) {
             if ((i < 0x20) || (i > 0x7e))
