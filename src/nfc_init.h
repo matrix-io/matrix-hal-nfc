@@ -51,18 +51,18 @@ class NFCInit {
     phacDiscLoop_Sw_DataParams_t*
         discovery_loop;  // Application Layer Discovery Loop component
     // Keystore and Crypto components
-    uint16_t key_entires_amount = 10;
-    uint16_t key_version_pairs_amount = 10;
-    uint16_t KUC_entries_amount = 10;
-    phKeyStore_Sw_DataParams_t keystore;
-    std::vector<phKeyStore_Sw_KeyEntry_t> key_entries =
-        std::vector<phKeyStore_Sw_KeyEntry_t>(key_entires_amount);
-    std::vector<phKeyStore_Sw_KeyVersionPair_t> key_version_pairs =
-        std::vector<phKeyStore_Sw_KeyVersionPair_t>(key_version_pairs_amount);
-    std::vector<phKeyStore_Sw_KUCEntry_t> KUC_entries =
-        std::vector<phKeyStore_Sw_KUCEntry_t>(KUC_entries_amount);
-    phCryptoSym_Sw_DataParams_t crypto_sym;
-    phCryptoRng_Sw_DataParams_t crypto_rng;
+    // uint16_t key_entires_amount = 10;
+    // uint16_t key_version_pairs_amount = 10;
+    // uint16_t KUC_entries_amount = 10;
+    // phKeyStore_Sw_DataParams_t keystore;
+    // std::vector<phKeyStore_Sw_KeyEntry_t> key_entries =
+    //     std::vector<phKeyStore_Sw_KeyEntry_t>(key_entires_amount);
+    // std::vector<phKeyStore_Sw_KeyVersionPair_t> key_version_pairs =
+    //     std::vector<phKeyStore_Sw_KeyVersionPair_t>(key_version_pairs_amount);
+    // std::vector<phKeyStore_Sw_KUCEntry_t> KUC_entries =
+    //     std::vector<phKeyStore_Sw_KUCEntry_t>(KUC_entries_amount);
+    // phCryptoSym_Sw_DataParams_t crypto_sym;
+    // phCryptoRng_Sw_DataParams_t crypto_rng;
     // NFC Standard Lib Components (Adding additional functionality)
     phpalMifare_Sw_DataParams_t
         pal_mifare;  // Protocol Abstraction Layer Mifare component

@@ -50,23 +50,23 @@ NFCInit::NFCInit() {
     discovery_loop = (phacDiscLoop_Sw_DataParams_t *)phNfcLib_GetDataParams(
         PH_COMP_AC_DISCLOOP);
     // Initialize Keystore and Crypto components
-    nfc_lib_status = phKeyStore_Sw_Init(
-        &keystore, sizeof(phKeyStore_Sw_DataParams_t), key_entries.data(),
-        key_entires_amount, key_version_pairs.data(), key_version_pairs_amount,
-        KUC_entries.data(), KUC_entries_amount);
-    if (nfc_lib_status != PH_ERR_SUCCESS) {
-        throw init_err_msg;
-    }
-    nfc_lib_status = phCryptoSym_Sw_Init(
-        &crypto_sym, sizeof(phCryptoSym_Sw_DataParams_t), &keystore);
-    if (nfc_lib_status != PH_ERR_SUCCESS) {
-        throw init_err_msg;
-    }
-    nfc_lib_status = phCryptoRng_Sw_Init(
-        &crypto_rng, sizeof(phCryptoRng_Sw_DataParams_t), &crypto_sym);
-    if (nfc_lib_status != PH_ERR_SUCCESS) {
-        throw init_err_msg;
-    }
+    // nfc_lib_status = phKeyStore_Sw_Init(
+    //     NULL, sizeof(phKeyStore_Sw_DataParams_t), key_entries.data(),
+    //     key_entires_amount, key_version_pairs.data(),
+    //     key_version_pairs_amount, KUC_entries.data(), KUC_entries_amount);
+    // if (nfc_lib_status != PH_ERR_SUCCESS) {
+    //     throw init_err_msg;
+    // }
+    // nfc_lib_status = phCryptoSym_Sw_Init(
+    //     &NULL, sizeof(phCryptoSym_Sw_DataParams_t), NULL);
+    // if (nfc_lib_status != PH_ERR_SUCCESS) {
+    //     throw init_err_msg;
+    // }
+    // nfc_lib_status = phCryptoRng_Sw_Init(
+    //     &NULL, sizeof(phCryptoRng_Sw_DataParams_t), &NULL);
+    // if (nfc_lib_status != PH_ERR_SUCCESS) {
+    //     throw init_err_msg;
+    // }
     // Initialize additional components
     nfc_lib_status =
         phpalMifare_Sw_Init(&pal_mifare, sizeof(phpalMifare_Sw_DataParams_t),
@@ -81,18 +81,18 @@ NFCInit::NFCInit() {
     }
     nfc_lib_status =
         phalMful_Sw_Init(&al_mful, sizeof(phalMful_Sw_DataParams_t),
-                         &pal_mifare, &keystore, &crypto_sym, &crypto_rng);
+                         &pal_mifare, NULL, NULL, NULL);
     if (nfc_lib_status != PH_ERR_SUCCESS) {
         throw init_err_msg;
     }
-    nfc_lib_status = phalMfdf_Sw_Init(
-        &al_mfdf, sizeof(phalMfdf_Sw_DataParams_t), &pal_mifare, &keystore,
-        &crypto_sym, &crypto_rng, &hal->sHal);
+    nfc_lib_status =
+        phalMfdf_Sw_Init(&al_mfdf, sizeof(phalMfdf_Sw_DataParams_t),
+                         &pal_mifare, NULL, NULL, NULL, &hal->sHal);
     if (nfc_lib_status != PH_ERR_SUCCESS) {
         throw init_err_msg;
     }
     nfc_lib_status = phalMfc_Sw_Init(&al_mfc, sizeof(phalMfc_Sw_DataParams_t),
-                                     &pal_mifare, &keystore);
+                                     &pal_mifare, NULL);
     if (nfc_lib_status != PH_ERR_SUCCESS) {
         throw init_err_msg;
     }
