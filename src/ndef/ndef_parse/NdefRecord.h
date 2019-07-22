@@ -33,6 +33,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
 
 #include <memory.h>
 #include <cstdint>
+#include <iomanip>
+#include <iostream>
+#include <sstream>
 #include <string>
 
 #define TNF_EMPTY 0x0
@@ -72,9 +75,8 @@ class NdefRecord {
     void setPayload(const uint8_t *payload, const int numBytes);
     void setId(const uint8_t *id, const unsigned int numBytes);
 
-#ifdef NDEF_USE_SERIAL
-    void print();
-#endif
+    std::string toString();
+
    private:
     uint8_t getTnfByte(bool firstRecord, bool lastRecord);
     uint8_t _tnf;  // 3 bit

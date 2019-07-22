@@ -274,65 +274,68 @@ void NdefRecord::setId(const uint8_t *id, const unsigned int numBytes) {
     memcpy(_id, id, numBytes);
     _idLength = numBytes;
 }
-#ifdef NDEF_USE_SERIAL
 
-void NdefRecord::print() {
-    // Serial.println(F("  NDEF Record"));
-    // Serial.print(F("    TNF 0x"));
-    // Serial.print(_tnf, HEX);
-    // Serial.print(" ");
-    // switch (_tnf) {
-    //     case TNF_EMPTY:
-    //         Serial.println(F("Empty"));
-    //         break;
-    //     case TNF_WELL_KNOWN:
-    //         Serial.println(F("Well Known"));
-    //         break;
-    //     case TNF_MIME_MEDIA:
-    //         Serial.println(F("Mime Media"));
-    //         break;
-    //     case TNF_ABSOLUTE_URI:
-    //         Serial.println(F("Absolute URI"));
-    //         break;
-    //     case TNF_EXTERNAL_TYPE:
-    //         Serial.println(F("External"));
-    //         break;
-    //     case TNF_UNKNOWN:
-    //         Serial.println(F("Unknown"));
-    //         break;
-    //     case TNF_UNCHANGED:
-    //         Serial.println(F("Unchanged"));
-    //         break;
-    //     case TNF_RESERVED:
-    //         Serial.println(F("Reserved"));
-    //         break;
-    //     default:
-    //         Serial.println();
-    // }
-    // Serial.print(F("    Type Length 0x"));
-    // Serial.print(_typeLength, HEX);
-    // Serial.print(" ");
-    // Serial.println(_typeLength);
-    // Serial.print(F("    Payload Length 0x"));
-    // Serial.print(_payloadLength, HEX);
-    // ;
-    // Serial.print(" ");
-    // Serial.println(_payloadLength);
-    // if (_idLength) {
-    //     Serial.print(F("    Id Length 0x"));
-    //     Serial.println(_idLength, HEX);
-    // }
-    // Serial.print(F("    Type "));
-    // PrintHexChar(_type, _typeLength);
-    // // TODO chunk large payloads so this is readable
-    // Serial.print(F("    Payload "));
-    // PrintHexChar(_payload, _payloadLength);
-    // if (_idLength) {
-    //     Serial.print(F("    Id "));
-    //     PrintHexChar(_id, _idLength);
-    // }
-    // Serial.print(F("    Record is "));
-    // Serial.print(getEncodedSize());
-    // Serial.println(" uint8_ts");
+std::string BytesToString(const uint8_t *vec, const uint8_t size) {
+    std::stringstream result;
+    for (int i = 0; i < size; i++) {
+        if ((vec[i] < 0x20) || (vec[i] > 0x7e))
+            result << '.';
+        else
+            result << vec[i];
+    }
+    result << std::flush;
+    return result.str();
 }
-#endif
+
+std::string NdefRecord::toString() {
+    std::stringstream result;
+    result << "NDEF Record" << std::flush;
+    result << " TNF 0x" << std::setfill('0') << std::hex << std::uppercase
+           << +_tnf << std::endl;
+    switch (_tnf) {
+        case TNF_EMPTY:
+            result << "Empty" << std::endl;
+            break;
+        case TNF_WELL_KNOWN:
+            result << "Well Known" << std::endl;
+            break;
+        case TNF_MIME_MEDIA:
+            result << "Mime Media" << std::endl;
+            break;
+        case TNF_ABSOLUTE_URI:
+            result << "Absolute URI" << std::endl;
+            break;
+        case TNF_EXTERNAL_TYPE:
+            result << "External" << std::endl;
+            break;
+        case TNF_UNKNOWN:
+            result << "Unknown" << std::endl;
+            break;
+        case TNF_UNCHANGED:
+            result << "Unchanged" << std::endl;
+            break;
+        case TNF_RESERVED:
+            result << "Reserved" << std::endl;
+            break;
+        default:
+            result << std::endl;
+    }
+    result << "Type Length 0x" << std::setfill('0') << std::hex
+           << std::uppercase << +_typeLength << std::endl;
+    result << "Payload Length 0x" << std::setfill('0') << std::hex
+           << std::uppercase << +_payloadLength << std::endl;
+    if (_idLength) {
+        result << "Id Length 0x" << std::setfill('0') << std::hex
+               << std::uppercase << +_idLength << std::endl;
+    }
+    result << "Type" << std::endl;
+    result << BytesToString(_type, _typeLength) << std::endl;
+    result << "Payload" << std::endl;
+    result << BytesToString(_payload, _payloadLength) << std::endl;
+    if (_idLength) {
+        result << "Id" << std::endl;
+        result << BytesToString(_id, _idLength) << std::endl;
+    }
+    result << "Record is " << getEncodedSize() << " bytes" << std::flush;
+    return result.str();
+}

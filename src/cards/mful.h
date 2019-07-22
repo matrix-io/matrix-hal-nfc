@@ -5,7 +5,7 @@
 
 #include <vector>
 
-#include "../nfc_data.h"
+#include "../data/pages_content.h"
 
 #include "../nfc_utility.h"
 
@@ -21,7 +21,7 @@ class MFUL {
         : nfc_init(nfc_init), nfc_utility(nfc_utility){};
     std::vector<uint8_t> ReadPage(uint8_t page_number);
     int WritePage(uint8_t page_number, std::vector<uint8_t>& write_data);
-    int ReadData(NFCData* nfc_data);
+    int ReadPages(PagesContent* pages_content);
 };
 
 }  // namespace matrix_hal

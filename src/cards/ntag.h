@@ -7,7 +7,7 @@
 
 #include "mful.h"
 
-#include "../nfc_data.h"
+#include "../data/pages_content.h"
 
 #include "../nfc_utility.h"
 

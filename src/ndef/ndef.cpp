@@ -1,8 +1,8 @@
 #include "ndef.h"
 
 namespace matrix_hal {
-int NDEF::ReadNDEF(NFC_NDEF *nfc_ndef) {
-    nfc_ndef->recently_updated = false;
+int NDEF::ReadNDEF(NDEFContent *ndef_content) {
+    ndef_content->recently_updated = false;
     uint16_t tag_tech_type = 0;
     uint8_t top_tag_type = 0;
     uint8_t top_tag_state = 0;
@@ -12,7 +12,7 @@ int NDEF::ReadNDEF(NFC_NDEF *nfc_ndef) {
         &tag_tech_type);
     if (nfc_init->nfc_lib_status != PH_ERR_SUCCESS || tag_tech_type == 0)
         return -nfc_init->nfc_lib_status;
-    nfc_ndef->Reset();
+    ndef_content->Reset();
     top_tag_type = nfc_utility->ExportTag(tag_tech_type, nullptr);
     /* Configure Top layer for specified tag type */
     nfc_init->nfc_lib_status = phalTop_SetConfig(
@@ -42,22 +42,21 @@ int NDEF::ReadNDEF(NFC_NDEF *nfc_ndef) {
         phalTop_CheckNdef(&nfc_init->tag_operations, &top_tag_state);
     if ((top_tag_state == PHAL_TOP_STATE_READONLY) ||
         (top_tag_state == PHAL_TOP_STATE_READWRITE)) {
-        nfc_ndef->ndef_detected = true;
+        ndef_content->ndef_detected = true;
         // Read NDEF message
         nfc_init->nfc_lib_status = phalTop_ReadNdef(
             &nfc_init->tag_operations, nfc_init->data_buffer, &ndef_length);
-        nfc_ndef->read_ndef = std::vector<uint8_t>(
+        ndef_content->content = std::vector<uint8_t>(
             nfc_init->data_buffer, nfc_init->data_buffer + ndef_length);
     }
     // TODO: Fix error handling
     return -nfc_init->nfc_lib_status;
 }
 
-int NDEF::WriteNDEF(NFC_NDEF *nfc_ndef) {
+int NDEF::WriteNDEF(NDEFContent *ndef_content) {
     uint16_t tag_tech_type = 0;
     uint8_t top_tag_type = 0;
     uint8_t top_tag_state = 0;
-    uint16_t ndef_length = 0;
     nfc_init->nfc_lib_status = phacDiscLoop_GetConfig(
         nfc_init->discovery_loop, PHAC_DISCLOOP_CONFIG_TECH_DETECTED,
         &tag_tech_type);
@@ -75,9 +74,9 @@ int NDEF::WriteNDEF(NFC_NDEF *nfc_ndef) {
         nfc_init->nfc_lib_status =
             phalTop_FormatNdef(&nfc_init->tag_operations);
     }
-    nfc_init->nfc_lib_status =
-        phalTop_WriteNdef(&nfc_init->tag_operations, nfc_ndef->read_ndef.data(),
-                          nfc_ndef->read_ndef.size());
+    nfc_init->nfc_lib_status = phalTop_WriteNdef(&nfc_init->tag_operations,
+                                                 ndef_content->content.data(),
+                                                 ndef_content->content.size());
 
     return 0;
 }
@@ -86,7 +85,6 @@ int NDEF::EraseNDEF() {
     uint16_t tag_tech_type = 0;
     uint8_t top_tag_type = 0;
     uint8_t top_tag_state = 0;
-    uint16_t ndef_length = 0;
     nfc_init->nfc_lib_status = phacDiscLoop_GetConfig(
         nfc_init->discovery_loop, PHAC_DISCLOOP_CONFIG_TECH_DETECTED,
         &tag_tech_type);

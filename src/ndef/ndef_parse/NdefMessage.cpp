@@ -240,6 +240,15 @@ NdefRecord NdefMessage::getRecord(int index) {
 
 NdefRecord NdefMessage::operator[](int index) { return getRecord(index); }
 
-#ifdef NDEF_USE_SERIAL
-void NdefMessage::print() {}
-#endif
+std::string NdefMessage::toString() {
+    std::stringstream result;
+    result << "NDEF Message " << _recordCount << " record" << std::flush;
+    _recordCount == 1 ? result << ", " << std::flush
+                      : result << "s, " << std::flush;
+    result << getEncodedSize() << " bytes" << std::endl;
+
+    for (unsigned int i = 0; i < _recordCount; i++) {
+        result << _records[i].toString() << std::endl;
+    }
+    return result.str();
+}

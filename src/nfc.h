@@ -1,14 +1,14 @@
 // NOTE: This file integrates with the NXP NFC Reader Library v4.040.05
 
-#ifndef MATRIX_HAL_NFC_SENSOR_H
-#define MATRIX_HAL_NFC_SENSOR_H
+#ifndef MATRIX_HAL_NFC_H
+#define MATRIX_HAL_NFC_H
 
 #include <cstdint>
 #include <iostream>
 
-#include "nfc_data.h"
-#include "nfc_info.h"
-#include "nfc_ndef.h"
+#include "data/info_content.h"
+#include "data/ndef_content.h"
+#include "data/pages_content.h"
 
 #include "cards/mful.h"
 #include "cards/ntag.h"
@@ -21,7 +21,7 @@
 
 namespace matrix_hal {
 
-class NFCSensor {
+class NFC {
    public:
     NFCInit nfc_init = NFCInit();
     NFCUtility nfc_utility = NFCUtility(&nfc_init);
@@ -31,10 +31,10 @@ class NFCSensor {
     // Begin User Functions for all
     int Activate();
     int Deactivate();
-    int ReadInfo(NFCInfo* nfc_info);
-    int SimpleReadInfo(NFCInfo* nfc_info);
+    int ReadInfo(InfoContent* nfc_info);
+    int SimpleReadInfo(InfoContent* nfc_info);
 };
 
 }  // namespace matrix_hal
 
-#endif  // MATRIX_HAL_NFC_SENSOR_H
+#endif  // MATRIX_HAL_NFC_H

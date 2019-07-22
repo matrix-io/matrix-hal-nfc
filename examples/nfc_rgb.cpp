@@ -6,8 +6,8 @@
 #include "matrix_hal/everloop_image.h"
 #include "matrix_hal/matrixio_bus.h"
 
-#include "matrix_nfc/nfc_info.h"
-#include "matrix_nfc/nfc_sensor.h"
+#include "matrix_nfc/nfc.h"
+#include "matrix_nfc/nfc_data.h"
 
 namespace hal = matrix_hal;
 
@@ -26,48 +26,51 @@ int main() {
 
     everloop.Setup(&bus);
 
-    hal::NFCSensor nfc_sensor;
-    hal::NFCInfo nfc_info;
+    hal::NFC nfc;
+    hal::NFCData nfc_data;
 
     // Get red UID
     std::cout << "Scan Red Tag" << std::endl;
     while (true) {
-        if (nfc_info.recently_updated) break;
-        nfc_sensor.SimpleReadInfo(&nfc_info);
+        if (nfc_data.info.recently_updated) break;
+        nfc.SimpleReadInfo(&nfc_data.info);
     }
-    red_UID = nfc_info.StrHexUID();
+    red_UID = nfc_data.info.UIDToHex();
 
-    nfc_info.recently_updated = false;
+    nfc_data.info.recently_updated = false;
 
     // Get green UID
     std::cout << "Scan Green Tag" << std::endl;
     while (true) {
-        if (nfc_info.recently_updated && nfc_info.StrHexUID() != red_UID) break;
-        nfc_sensor.SimpleReadInfo(&nfc_info);
+        if (nfc_data.info.recently_updated &&
+            nfc_data.info.UIDToHex() != red_UID)
+            break;
+        nfc.SimpleReadInfo(&nfc_data.info);
     }
-    green_UID = nfc_info.StrHexUID();
+    green_UID = nfc_data.info.UIDToHex();
 
-    nfc_info.recently_updated = false;
+    nfc_data.info.recently_updated = false;
 
     // Get blue UID
     std::cout << "Scan Blue Tag" << std::endl;
     while (true) {
-        if (nfc_info.recently_updated && nfc_info.StrHexUID() != red_UID &&
-            nfc_info.StrHexUID() != green_UID)
+        if (nfc_data.info.recently_updated &&
+            nfc_data.info.UIDToHex() != red_UID &&
+            nfc_data.info.UIDToHex() != green_UID)
             break;
-        nfc_sensor.SimpleReadInfo(&nfc_info);
+        nfc.SimpleReadInfo(&nfc_data.info);
     }
-    blue_UID = nfc_info.StrHexUID();
+    blue_UID = nfc_data.info.UIDToHex();
 
-    nfc_info.recently_updated = false;
+    nfc_data.info.recently_updated = false;
 
     std::cout << "\nScan specified tags to activate Everloop" << std::endl;
 
     do {
-        nfc_sensor.SimpleReadInfo(&nfc_info);
+        nfc.SimpleReadInfo(&nfc_data.info);
 
-        if (nfc_info.recently_updated) {
-            std::string curr_UID = nfc_info.StrHexUID();
+        if (nfc_data.info.recently_updated) {
+            std::string curr_UID = nfc_data.info.UIDToHex();
             if (red_UID == curr_UID) {
                 for (hal::LedValue &led : everloop_image.leds) {
                     led.red = 50;

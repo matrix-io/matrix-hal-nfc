@@ -11,8 +11,8 @@
 #include "matrix_hal/everloop_image.h"
 #include "matrix_hal/matrixio_bus.h"
 
+#include "matrix_nfc/nfc.h"
 #include "matrix_nfc/nfc_data.h"
-#include "matrix_nfc/nfc_sensor.h"
 
 using std::cout;
 using std::endl;
@@ -30,18 +30,18 @@ int main() {
 
     everloop.Setup(&bus);
 
-    hal::NFCSensor nfc_sensor;
+    hal::NFC nfc;
     hal::NFCData nfc_data;
 
     cout << "Scan a Mifare Ultralight or NTAG" << endl;
 
     do {
-        nfc_sensor.Activate();
-        nfc_sensor.mful.ReadData(&nfc_data);
-        nfc_sensor.Deactivate();
+        nfc.Activate();
+        nfc.mful.ReadPages(&nfc_data.pages);
+        nfc.Deactivate();
 
-        if (nfc_data.recently_updated) {
-            cout << nfc_data.ToHex() << endl << endl;
+        if (nfc_data.pages.recently_updated) {
+            cout << nfc_data.pages.ToHex() << endl << endl;
             for (hal::LedValue &led : everloop_image.leds) {
                 led.red = 0;
                 led.green = 20;

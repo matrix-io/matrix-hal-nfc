@@ -1,6 +1,6 @@
 // NOTE: This file integrates with the NXP NFC Reader Library v4.040.05
 
-#include "nfc_sensor.h"
+#include "nfc.h"
 
 using std::cerr;
 using std::cout;
@@ -8,13 +8,13 @@ using std::endl;
 
 namespace matrix_hal {
 
-int NFCSensor::Activate() {
+int NFC::Activate() {
     nfc_init.nfc_lib_status =
         phNfcLib_Activate(nfc_init.technology_mask, &nfc_init.peer_info, NULL);
     return nfc_init.nfc_lib_status;
 }
 
-int NFCSensor::Deactivate() {
+int NFC::Deactivate() {
     nfc_init.nfc_lib_status = phNfcLib_Deactivate(
         PH_NFCLIB_DEACTIVATION_MODE_RELEASE, &nfc_init.peer_info);
     if (nfc_init.nfc_lib_status != PH_NFCLIB_STATUS_SUCCESS) {
@@ -30,7 +30,7 @@ int NFCSensor::Deactivate() {
 /* This will read and populate info data (Card must already have been
  * activated!)
  */
-int NFCSensor::ReadInfo(NFCInfo *nfc_info) {
+int NFC::ReadInfo(InfoContent *nfc_info) {
     nfc_info->recently_updated = false;
     uint16_t tag_tech_type = 0;
     // Hook into the discovery loop and pull UID/AQT(A/B)/SAK/Type from there
@@ -44,7 +44,7 @@ int NFCSensor::ReadInfo(NFCInfo *nfc_info) {
 }
 
 /* This will activate, read and populate info data, then deactivate card */
-int NFCSensor::SimpleReadInfo(NFCInfo *nfc_info) {
+int NFC::SimpleReadInfo(InfoContent *nfc_info) {
     nfc_info->recently_updated = false;
     nfc_init.nfc_lib_status = Activate();
     if (nfc_init.nfc_lib_status != PH_NFCLIB_STATUS_PEER_ACTIVATION_DONE)

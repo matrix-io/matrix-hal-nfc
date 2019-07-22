@@ -29,10 +29,11 @@ include_directories(
 )
 
 set(matrix_hal_nfc_headers
-./src/nfc_data.h
-./src/nfc_info.h
-./src/nfc_ndef.h
-./src/nfc_sensor.h
+./src/data/nfc_data.h
+./src/data/info_content.h
+./src/data/ndef_content.h
+./src/data/pages_content.h
+./src/nfc.h
 ./src/nfc_init.h
 ./src/nfc_utility.h
 ./src/cards/mful.h
@@ -43,7 +44,7 @@ set(matrix_hal_nfc_headers
 )
 
 set (matrix_hal_nfc_src
-./src/nfc_sensor.cpp
+./src/nfc.cpp
 ./src/nfc_init.cpp
 ./src/nfc_utility.cpp
 ./src/cards/mful.cpp

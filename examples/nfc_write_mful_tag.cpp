@@ -6,8 +6,8 @@
 #include "matrix_hal/everloop_image.h"
 #include "matrix_hal/matrixio_bus.h"
 
+#include "matrix_nfc/nfc.h"
 #include "matrix_nfc/nfc_data.h"
-#include "matrix_nfc/nfc_sensor.h"
 
 using std::cin;
 using std::cout;
@@ -26,7 +26,7 @@ int main() {
 
     everloop.Setup(&bus);
 
-    hal::NFCSensor nfc_sensor;
+    hal::NFC nfc;
     hal::NFCData nfc_data;
 
     bool write_success = false;
@@ -52,28 +52,25 @@ int main() {
             write_success = false;
         }
 
-        int status = nfc_sensor.Activate();
+        int status = nfc.Activate();
         if (hal::DescStatus(status) == "Activation Done") {
-            std::vector<uint8_t> read_page =
-                nfc_sensor.mful.ReadPage(page_number);
+            std::vector<uint8_t> read_page = nfc.mful.ReadPage(page_number);
             if (read_page.empty()) cout << "Error Reading" << endl;
-            cout << "Page: " << page_number
-                 << " | Before Write: " << hal::NFCData::BytesToChar(read_page)
-                 << endl;
-            status = nfc_sensor.mful.WritePage(page_number, write_data);
+            cout << "Page: " << page_number << " | Before Write: "
+                 << hal::PagesContent::BytesToString(read_page) << endl;
+            status = nfc.mful.WritePage(page_number, write_data);
             if (hal::DescStatus(status) == "Incorrect Card Type For Function") {
                 cout << "This example only supports Mifare Ultralight and NTAG "
                         "cards"
                      << endl;
-                nfc_sensor.Deactivate();
+                nfc.Deactivate();
             }
-            read_page = nfc_sensor.mful.ReadPage(page_number);
-            cout << "Page: " << page_number
-                 << " | After Write: " << hal::NFCData::BytesToChar(read_page)
-                 << endl
+            read_page = nfc.mful.ReadPage(page_number);
+            cout << "Page: " << page_number << " | After Write: "
+                 << hal::PagesContent::BytesToString(read_page) << endl
                  << endl;
             write_success = true;
-            nfc_sensor.Deactivate();
+            nfc.Deactivate();
             for (hal::LedValue &led : everloop_image.leds) {
                 led.red = 0;
                 led.green = 20;

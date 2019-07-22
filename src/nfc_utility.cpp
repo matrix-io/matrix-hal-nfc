@@ -3,6 +3,38 @@
 
 namespace matrix_hal {
 
+std::string NFCUtility::GetCardFamily() {
+    switch (nfc_init->peer_info.dwActivatedType) {
+        case E_PH_NFCLIB_MIFARE_CLASSIC_1K:
+            return "Mifare Classic 1K";
+            break;
+        case E_PH_NFCLIB_MIFARE_CLASSIC_4K:
+            return "Mifare Classic 4K";
+            break;
+        case E_PH_NFCLIB_MIFARE_ULTRALIGHT:
+            return "Mifare Ultralight | NTAG";
+            break;
+        case E_PH_NFCLIB_MIFARE_DESFIRE:
+            return "Mifare DESfire";
+            break;
+        case E_PH_NFCLIB_TYPEB_LAYER3:
+            return "Type B Layer 3";
+            break;
+        case E_PH_NFCLIB_TYPEA_LAYER3:
+            return "Mifare Classic | Mifare Ultralight | Type A Layer 3";
+            break;
+        case E_PH_NFCLIB_TYPEA_LAYER4:
+            return "Mifare DESFire | Type A Layer 4";
+            break;
+        case E_PH_NFCLIB_TYPEB_LAYER4:
+            return "Type B Layer 4";
+            break;
+        default:
+            return "Unknown Card";
+            break;
+    }
+}
+
 std::pair<std::string, int> NFCUtility::GetCardIC() {
     if (nfc_init->peer_info.dwActivatedType == E_PH_NFCLIB_MIFARE_ULTRALIGHT) {
         std::vector<uint8_t> version_info = std::vector<uint8_t>(8);
@@ -61,13 +93,12 @@ std::pair<std::string, int> NFCUtility::GetCardIC() {
 
 /* This function returns top_tag_type for use with tag_operations, it will
  * also populate nfc_info (if provided) */
-uint8_t NFCUtility::ExportTag(uint16_t tag_tech_type, NFCInfo *nfc_info) {
+uint8_t NFCUtility::ExportTag(uint16_t tag_tech_type, InfoContent *nfc_info) {
     uint8_t top_tag_type = 0;
     if (nfc_info) {
         nfc_info->Reset();
         // TODO: Clean up DescCardType function
-        nfc_info->card_family =
-            DescCardFamily(nfc_init->peer_info.dwActivatedType);
+        nfc_info->card_family = GetCardFamily();
         std::pair<std::string, int> p = GetCardIC();
         nfc_info->IC_type = p.first;
         nfc_info->storage_size = p.second;
@@ -313,72 +344,4 @@ std::string DescStatus(int status_type) {
         }
     }
 }
-
-std::string DescCardFamily(uint16_t activated_type) {
-    switch (activated_type) {
-        case E_PH_NFCLIB_MIFARE_CLASSIC_1K:
-            return "Mifare Classic 1K";
-            break;
-        case E_PH_NFCLIB_MIFARE_CLASSIC_4K:
-            return "Mifare Classic 4K";
-            break;
-        case E_PH_NFCLIB_MIFARE_ULTRALIGHT:
-            return "Mifare Ultralight | NTAG";
-            break;
-        case E_PH_NFCLIB_MIFARE_DESFIRE:
-            return "Mifare DESfire";
-            break;
-        case E_PH_NFCLIB_TYPEB_LAYER3:
-            return "Type B Layer 3";
-            break;
-        case E_PH_NFCLIB_TYPEA_LAYER3:
-            return "Mifare Classic | Mifare Ultralight | Type A Layer 3";
-            break;
-        case E_PH_NFCLIB_TYPEA_LAYER4:
-            return "Mifare DESFire | Type A Layer 4";
-            break;
-        case E_PH_NFCLIB_TYPEB_LAYER4:
-            return "Type B Layer 4";
-            break;
-        default:
-            return "Unknown Card";
-            break;
-    }
-}
-
-// For detecting card IC
-// https://stackoverflow.com/questions/37002498/distinguish-ntag213-from-mf0icu2
-// {Type, Subtype, Major Version, Minor Version, Storage Size}
-std::vector<uint8_t> NTAG210 = {0x04, 0x01, 0x01, 0x00, 0x0B};
-std::vector<uint8_t> NTAG212 = {0x04, 0x01, 0x01, 0x00, 0x0E};
-std::vector<uint8_t> NTAG213 = {0x04, 0x02, 0x01, 0x00, 0x0F};
-std::vector<uint8_t> NTAG213F = {0x04, 0x04, 0x01, 0x00, 0x0F};
-std::vector<uint8_t> NTAG215 = {0x04, 0x02, 0x01, 0x00, 0x11};
-std::vector<uint8_t> NTAG216 = {0x04, 0x02, 0x01, 0x00, 0x13};
-std::vector<uint8_t> NTAG216F = {0x04, 0x04, 0x01, 0x00, 0x13};
-// +------------+------+---------+-----------+--------------+
-std::vector<uint8_t> NT3H1101 = {0x04, 0x02, 0x01, 0x01, 0x13};
-std::vector<uint8_t> NT3H1101W0 = {0x04, 0x05, 0x02, 0x01, 0x13};
-std::vector<uint8_t> NT3H2111W0 = {0x04, 0x05, 0x02, 0x02, 0x13};
-std::vector<uint8_t> NT3H2101 = {0x04, 0x02, 0x01, 0x01, 0x15};
-std::vector<uint8_t> NT3H1201W0 = {0x04, 0x05, 0x02, 0x01, 0x15};
-std::vector<uint8_t> NT3H2211W0 = {0x04, 0x05, 0x02, 0x02, 0x15};
-// +------------+------+---------+-----------+--------------+
-std::vector<uint8_t> MF0UL1101 = {0x03, 0x01, 0x01, 0x00, 0x0B};
-std::vector<uint8_t> MF0ULH1101 = {0x03, 0x02, 0x01, 0x00, 0x0B};
-std::vector<uint8_t> MF0UL2101 = {0x03, 0x01, 0x01, 0x00, 0x0E};
-std::vector<uint8_t> MF0ULH2101 = {0x03, 0x02, 0x01, 0x00, 0x0E};
-// +------------+------+---------+-----------+--------------+
-// {Identification Info, IC Name, User Storage Size (Bytes)}
-std::vector<std::tuple<std::vector<uint8_t>, std::string, uint32_t>> IC_list = {
-    {NTAG210, "NTAG210", 48},         {NTAG212, "NTAG212", 128},
-    {NTAG213, "NTAG213", 144},        {NTAG213F, "NTAG213F", 144},
-    {NTAG215, "NTAG215", 504},        {NTAG216, "NTAG216", 888},
-    {NTAG216F, "NTAG216F", 888},      {NT3H1101, "NT3H1101", 888},
-    {NT3H1101W0, "NT3H1101W0", 888},  {NT3H2111W0, "NT3H2111W0", 1912},
-    {NT3H2101, "NT3H2101", 888},      {NT3H1201W0, "NT3H1201W0", 1904},
-    {NT3H2211W0, "NT3H2211W0", 1912}, {MF0UL1101, "MF0UL1101", 48},
-    {MF0ULH1101, "MF0ULH1101", 48},   {MF0UL2101, "MF0UL2101", 128},
-    {MF0ULH2101, "MF0ULH2101", 128}};
-
 }  // namespace matrix_hal

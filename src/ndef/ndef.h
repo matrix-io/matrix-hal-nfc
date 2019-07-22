@@ -6,7 +6,7 @@
 #include <cstdint>
 #include <iostream>
 
-#include "../nfc_ndef.h"
+#include "../data/ndef_content.h"
 
 #include "../nfc_utility.h"
 
@@ -20,8 +20,8 @@ class NDEF {
     NFCUtility* nfc_utility;
     NDEF(NFCInit* nfc_init, NFCUtility* nfc_utility)
         : nfc_init(nfc_init), nfc_utility(nfc_utility){};
-    int ReadNDEF(NFC_NDEF* nfc_ndef);
-    int WriteNDEF(NFC_NDEF* nfc_ndef);
+    int ReadNDEF(NDEFContent* ndef_content);
+    int WriteNDEF(NDEFContent* ndef_content);
     int EraseNDEF();
 };
 

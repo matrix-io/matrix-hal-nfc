@@ -55,18 +55,18 @@ int MFUL::WritePage(uint8_t page_number, std::vector<uint8_t> &write_data) {
     return nfc_init->nfc_lib_status;
 }
 
-int MFUL::ReadData(NFCData *nfc_data) {
-    nfc_data->recently_updated = false;
+int MFUL::ReadPages(PagesContent *pages_content) {
+    pages_content->recently_updated = false;
     // Check if card activated and is a MFUL or NTAG
     if (nfc_init->peer_info.dwActivatedType != E_PH_NFCLIB_MIFARE_ULTRALIGHT)
         return INCORRECT_CARD_FOR_FUNCTION;
-    nfc_data->Reset();
+    pages_content->Reset();
     uint8_t page_number = 0;
     std::vector<uint8_t> read_buffer;
 
     do {
         if (!read_buffer.empty()) {
-            nfc_data->read_data.emplace_back(read_buffer);
+            pages_content->content.emplace_back(read_buffer);
             read_buffer.clear();
         }
         read_buffer = ReadPage(page_number);

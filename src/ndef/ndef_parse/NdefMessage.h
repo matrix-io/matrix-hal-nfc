@@ -33,6 +33,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
 
 #include <memory.h>
 #include <cstdint>
+#include <iostream>
+#include <sstream>
 #include <string>
 
 #include "NdefRecord.h"
@@ -63,9 +65,8 @@ class NdefMessage {
     NdefRecord getRecord(int index);
     NdefRecord operator[](int index);
 
-#ifdef NDEF_USE_SERIAL
-    void print();
-#endif
+    std::string toString();
+
    private:
     NdefRecord _records[MAX_NDEF_RECORDS];
     unsigned int _recordCount;

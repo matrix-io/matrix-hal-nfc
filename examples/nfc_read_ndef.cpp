@@ -11,8 +11,8 @@
 #include "matrix_hal/everloop_image.h"
 #include "matrix_hal/matrixio_bus.h"
 
-#include "matrix_nfc/nfc_ndef.h"
-#include "matrix_nfc/nfc_sensor.h"
+#include "matrix_nfc/nfc.h"
+#include "matrix_nfc/nfc_data.h"
 
 using std::cout;
 using std::endl;
@@ -30,19 +30,21 @@ int main() {
 
     everloop.Setup(&bus);
 
-    hal::NFCSensor nfc_sensor;
-    hal::NFC_NDEF nfc_ndef;
+    hal::NFC nfc;
+    hal::NFCData nfc_data;
 
     cout << "Scan a Tag, Any Tag!" << endl;
 
     do {
-        nfc_sensor.Activate();
-        nfc_sensor.ndef.ReadNDEF(&nfc_ndef);
-        nfc_sensor.Deactivate();
+        nfc.Activate();
+        nfc.ndef.ReadNDEF(&nfc_data.ndef);
+        nfc.Deactivate();
 
-        if (nfc_ndef.recently_updated) {
+        if (nfc_data.ndef.recently_updated) {
             cout << endl;
-            nfc_ndef.DumpBuffer();
+            cout << nfc_data.ndef.ToString() << endl;
+            cout << endl;
+            cout << nfc_data.ndef.ToHex() << endl;
             for (hal::LedValue &led : everloop_image.leds) {
                 led.red = 0;
                 led.green = 20;

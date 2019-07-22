@@ -7,8 +7,8 @@
 #include "matrix_hal/everloop_image.h"
 #include "matrix_hal/matrixio_bus.h"
 
-#include "matrix_nfc/nfc_info.h"
-#include "matrix_nfc/nfc_sensor.h"
+#include "matrix_nfc/nfc.h"
+#include "matrix_nfc/nfc_data.h"
 
 using namespace std;
 
@@ -27,16 +27,16 @@ int main() {
 
     everloop.Setup(&bus);
 
-    hal::NFCSensor nfc_sensor;
-    hal::NFCInfo nfc_info;
+    hal::NFC nfc;
+    hal::NFCData nfc_data;
 
     // Get switch UID
     std::cout << "Scan ON/OFF Tag" << std::endl;
     while (true) {
-        if (nfc_info.recently_updated) break;
-        nfc_sensor.SimpleReadInfo(&nfc_info);
+        if (nfc_data.info.recently_updated) break;
+        nfc.SimpleReadInfo(&nfc_data.info);
     }
-    switchUID = nfc_info.StrHexUID();
+    switchUID = nfc_data.info.UIDToHex();
 
     std::cout << "ON/OFF Tag Scanned!" << std::endl;
 
@@ -45,13 +45,13 @@ int main() {
 
     do {
         auto start = chrono::steady_clock::now();
-        nfc_sensor.SimpleReadInfo(&nfc_info);
+        nfc.SimpleReadInfo(&nfc_data.info);
         auto end = chrono::steady_clock::now();
         auto diff = end - start;
         cout << chrono::duration<double, milli>(diff).count() << " ms" << endl;
 
-        if (nfc_info.recently_updated) {
-            std::string currUID = nfc_info.StrHexUID();
+        if (nfc_data.info.recently_updated) {
+            std::string currUID = nfc_data.info.UIDToHex();
             if (switchUID == currUID) {
                 for (matrix_hal::LedValue &led : everloop_image.leds) {
                     // Sine waves 120 degrees out of phase for rainbow
