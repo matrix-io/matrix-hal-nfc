@@ -8,23 +8,45 @@
 
 // This MUST be included last!
 extern "C" {
-#include <matrix_nfc/nxp_nfc/NxpNfcRdLib/intfs/phNfcLib.h>
-// TODO: Refine include statements and organize by type
-#include <matrix_nfc/nxp_nfc/NxpNfcRdLib/intfs/phCryptoRng.h>
-#include <matrix_nfc/nxp_nfc/NxpNfcRdLib/intfs/phCryptoSym.h>
+// Status Types
+#include <matrix_nfc/nxp_nfc/NxpNfcRdLib/types/ph_Status.h>
+// Bus Abstraction Layer
+#include <matrix_nfc/nxp_nfc/NxpNfcRdLib/intfs/phbalReg.h>
+// Hardware Abstraction Layer
+#include <matrix_nfc/nxp_nfc/NxpNfcRdLib/intfs/phhalHw.h>
+// Protocol Abstraction Layers
+#include <matrix_nfc/nxp_nfc/NxpNfcRdLib/intfs/phpalFelica.h>
+#include <matrix_nfc/nxp_nfc/NxpNfcRdLib/intfs/phpalI14443p3a.h>
+#include <matrix_nfc/nxp_nfc/NxpNfcRdLib/intfs/phpalI14443p3b.h>
+#include <matrix_nfc/nxp_nfc/NxpNfcRdLib/intfs/phpalI14443p4.h>
+#include <matrix_nfc/nxp_nfc/NxpNfcRdLib/intfs/phpalI14443p4a.h>
+#include <matrix_nfc/nxp_nfc/NxpNfcRdLib/intfs/phpalMifare.h>
+// Application Layer
 #include <matrix_nfc/nxp_nfc/NxpNfcRdLib/intfs/phalFelica.h>
 #include <matrix_nfc/nxp_nfc/NxpNfcRdLib/intfs/phalMfc.h>
+#include <matrix_nfc/nxp_nfc/NxpNfcRdLib/intfs/phalMfdf.h>
+#include <matrix_nfc/nxp_nfc/NxpNfcRdLib/intfs/phalMful.h>
+#include <matrix_nfc/nxp_nfc/NxpNfcRdLib/intfs/phalT1T.h>
 #include <matrix_nfc/nxp_nfc/NxpNfcRdLib/intfs/phalTop.h>
-#include <matrix_nfc/nxp_nfc/NxpNfcRdLib/intfs/phpalFelica.h>
-#include <matrix_nfc/nxp_nfc/NxpNfcRdLib/types/ph_Status.h>
+// Crypto
+#include <matrix_nfc/nxp_nfc/NxpNfcRdLib/intfs/phCryptoRng.h>
+#include <matrix_nfc/nxp_nfc/NxpNfcRdLib/intfs/phCryptoSym.h>
+// Keystore
+#include <matrix_nfc/nxp_nfc/NxpNfcRdLib/intfs/phKeyStore.h>
+// Discovery Loop
+#include <matrix_nfc/nxp_nfc/NxpNfcRdLib/intfs/phacDiscLoop.h>
+// Simplified NXP Lib
+#include <matrix_nfc/nxp_nfc/NxpNfcRdLib/intfs/phNfcLib.h>
 }
 
 // Begin NXP Defines
-#define DATA_BUFFER_LEN 260
+#define DATA_BUFFER_LEN 1024
 // These two are specifically for the Simplified NXP Lib
 #define SIMPLIFIED_ISO_PRIO 0
 #define SIMPLIFIED_ISO_STACK 0x20000
 // END NXP Defines
+// Number of keystore entries
+#define KEYSTORE_ENTRIES 10
 
 namespace matrix_hal {
 class NFCInit {
@@ -51,18 +73,12 @@ class NFCInit {
     phacDiscLoop_Sw_DataParams_t*
         discovery_loop;  // Application Layer Discovery Loop component
     // Keystore and Crypto components
-    // uint16_t key_entires_amount = 10;
-    // uint16_t key_version_pairs_amount = 10;
-    // uint16_t KUC_entries_amount = 10;
-    // phKeyStore_Sw_DataParams_t keystore;
-    // std::vector<phKeyStore_Sw_KeyEntry_t> key_entries =
-    //     std::vector<phKeyStore_Sw_KeyEntry_t>(key_entires_amount);
-    // std::vector<phKeyStore_Sw_KeyVersionPair_t> key_version_pairs =
-    //     std::vector<phKeyStore_Sw_KeyVersionPair_t>(key_version_pairs_amount);
-    // std::vector<phKeyStore_Sw_KUCEntry_t> KUC_entries =
-    //     std::vector<phKeyStore_Sw_KUCEntry_t>(KUC_entries_amount);
-    // phCryptoSym_Sw_DataParams_t crypto_sym;
-    // phCryptoRng_Sw_DataParams_t crypto_rng;
+    phKeyStore_Sw_DataParams_t keystore;
+    phKeyStore_Sw_KeyEntry_t key_entries[KEYSTORE_ENTRIES];
+    phKeyStore_Sw_KeyVersionPair_t key_version_pairs[KEYSTORE_ENTRIES];
+    phKeyStore_Sw_KUCEntry_t KUC_entries[KEYSTORE_ENTRIES];
+    phCryptoSym_Sw_DataParams_t crypto_sym;
+    phCryptoRng_Sw_DataParams_t crypto_rng;
     // NFC Standard Lib Components (Adding additional functionality)
     phpalMifare_Sw_DataParams_t
         pal_mifare;  // Protocol Abstraction Layer Mifare component

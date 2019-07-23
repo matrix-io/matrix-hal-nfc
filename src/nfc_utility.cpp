@@ -97,7 +97,6 @@ uint8_t NFCUtility::ExportTag(uint16_t tag_tech_type, InfoContent *nfc_info) {
     uint8_t top_tag_type = 0;
     if (nfc_info) {
         nfc_info->Reset();
-        // TODO: Clean up DescCardType function
         nfc_info->card_family = GetCardFamily();
         std::pair<std::string, int> p = GetCardIC();
         nfc_info->IC_type = p.first;
