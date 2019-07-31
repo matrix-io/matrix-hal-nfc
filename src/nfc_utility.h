@@ -58,16 +58,6 @@ class NFCUtility {
             {MF0ULH2101, "MF0ULH2101", 128}};
 };
 
-// TODO : REFACTOR BELOW
-
-#define INCORRECT_CARD_FOR_FUNCTION 0x377
-// Errors from the standard NXP library, not simplfied NXP library.
-std::string DescPhStatus(int status_type);
-
-/* If status is negative then it is standard NXP library error, not simplified
-NXP library error. Errors are handled this way so that end user can do `cout <<
-DescStatus(FunctionName())` and get the error logged. */
-std::string DescStatus(int status_type);
 }  // namespace matrix_hal
 
 #endif  // MATRIX_HAL_NFC_UTILITY_H

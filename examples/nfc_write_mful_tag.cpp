@@ -53,13 +53,13 @@ int main() {
         }
 
         int status = nfc.Activate();
-        if (hal::DescStatus(status) == "Activation Done") {
+        if (hal::NFCStatus(status) == "Activation Done") {
             std::vector<uint8_t> read_page = nfc.mful.ReadPage(page_number);
             if (read_page.empty()) cout << "Error Reading" << endl;
             cout << "Page: " << page_number << " | Before Write: "
                  << hal::PagesContent::BytesToString(read_page) << endl;
             status = nfc.mful.WritePage(page_number, write_data);
-            if (hal::DescStatus(status) == "Incorrect Card Type For Function") {
+            if (hal::NFCStatus(status) == "Incorrect Card Type For Function") {
                 cout << "This example only supports Mifare Ultralight and NTAG "
                         "cards"
                      << endl;

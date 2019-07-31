@@ -7,6 +7,7 @@
 
 #include "../data/pages_content.h"
 
+#include "../nfc_status.h"
 #include "../nfc_utility.h"
 
 #include "../nfc_init.h"

@@ -15,6 +15,7 @@
 
 #include "ndef/ndef.h"
 
+#include "nfc_status.h"
 #include "nfc_utility.h"
 
 #include "nfc_init.h"

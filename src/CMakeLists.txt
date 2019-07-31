@@ -36,6 +36,7 @@ data/pages_content.h
 nfc.h
 nfc_init.h
 nfc_utility.h
+nfc_status.h
 cards/mful.h
 cards/ntag.h
 ndef/ndef.h
@@ -47,6 +48,7 @@ set (matrix_hal_nfc_src
 nfc.cpp
 nfc_init.cpp
 nfc_utility.cpp
+nfc_status.cpp
 cards/mful.cpp
 cards/ntag.cpp
 ndef/ndef.cpp
