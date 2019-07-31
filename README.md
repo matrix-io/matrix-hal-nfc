@@ -1,4 +1,4 @@
-# MATRIX HAL NFC (WIP)
+# MATRIX HAL NFC
 
 matrix-hal-nfc is a simple, easy to use wrapper for using NXP's NFC Reader Library with the PN512 chip on the [MATRIX Creator](https://matrix-io.github.io/matrix-documentation/matrix-creator/overview/).
 
@@ -60,7 +60,6 @@ Inside matrix-hal-nxp, you need to run the build script to finish the library in
 
 ```
 ./build.sh
-sudo ldconfig
 ```
 
 ## Running The NFC Examples
@@ -74,7 +73,7 @@ g++ -o YOUR_OUTPUT YOUR_INPUT -std=c++11 -DNXPBUILD__PH_RASPBERRY_PI -I/usr/loca
 
 ## Credits
 
-The NDEF parsing library in src/ndef/ndef_parse is Don's NDEF library for Arduino, modified for this wrapper.
+The NDEF parsing library in `src/ndef/ndef_parse` is [Don's NDEF Library](https://github.com/don/NDEF) for Arduino; it has been modified for this wrapper.
 https://github.com/don/NDEF
 
 The NXP NFC Library is provided by NXP, and can not be redistributed without permission of NXP.
