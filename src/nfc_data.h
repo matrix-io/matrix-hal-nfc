@@ -5,8 +5,6 @@
 #include "data/ndef_content.h"
 #include "data/pages_content.h"
 
-#include "ndef/ndef_parse/NdefMessage.h"
-
 namespace matrix_hal {
 class NFCData {
    public:

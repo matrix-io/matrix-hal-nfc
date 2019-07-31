@@ -37,7 +37,7 @@ int main() {
 
     do {
         nfc.Activate();
-        nfc.ndef.ReadNDEF(&nfc_data.ndef);
+        nfc.ndef.Read(&nfc_data.ndef);
         nfc.Deactivate();
 
         if (nfc_data.ndef.recently_updated) {

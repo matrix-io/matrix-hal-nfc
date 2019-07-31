@@ -37,38 +37,38 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
 #include <sstream>
 #include <string>
 
-#include "NdefRecord.h"
+#include "ndef_record.h"
 
 #define MAX_NDEF_RECORDS 4
 
-class NdefMessage {
+class NDEFMessage {
    public:
-    NdefMessage(void);
-    NdefMessage(const uint8_t* data, const int numBytes);
-    NdefMessage(const NdefMessage& rhs);
-    ~NdefMessage();
-    NdefMessage& operator=(const NdefMessage& rhs);
+    NDEFMessage(void);
+    NDEFMessage(const uint8_t* data, const int numBytes);
+    NDEFMessage(const NDEFMessage& rhs);
+    ~NDEFMessage();
+    NDEFMessage& operator=(const NDEFMessage& rhs);
 
-    int getEncodedSize();  // need so we can pass array to encode
-    void encode(uint8_t* data);
+    int GetEncodedSize();  // need so we can pass array to Encode
+    void Encode(uint8_t* data);
 
-    bool addRecord(NdefRecord& record);
-    void addMimeMediaRecord(std::string mimeType, std::string payload);
-    void addMimeMediaRecord(std::string mimeType, uint8_t* payload,
+    bool AddRecord(NDEFRecord& record);
+    void AddMimeMediaRecord(std::string mimeType, std::string payload);
+    void AddMimeMediaRecord(std::string mimeType, uint8_t* payload,
                             int payloadLength);
-    void addTextRecord(std::string text);
-    void addTextRecord(std::string text, std::string encoding);
-    void addUriRecord(std::string uri);
-    void addEmptyRecord();
+    void AddTextRecord(std::string text);
+    void AddTextRecord(std::string text, std::string encoding);
+    void AddUriRecord(std::string uri);
+    void AddEmptyRecord();
 
-    unsigned int getRecordCount();
-    NdefRecord getRecord(int index);
-    NdefRecord operator[](int index);
+    unsigned int GetRecordCount();
+    NDEFRecord GetRecord(int index);
+    NDEFRecord operator[](int index);
 
-    std::string toString();
+    std::string ToString();
 
    private:
-    NdefRecord _records[MAX_NDEF_RECORDS];
+    NDEFRecord _records[MAX_NDEF_RECORDS];
     unsigned int _recordCount;
 };
 

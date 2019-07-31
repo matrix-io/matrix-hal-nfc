@@ -28,11 +28,11 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
 
-#include "NdefMessage.h"
+#include "ndef_message.h"
 
-NdefMessage::NdefMessage(void) { _recordCount = 0; }
+NDEFMessage::NDEFMessage(void) { _recordCount = 0; }
 
-NdefMessage::NdefMessage(const uint8_t* data, const int numBytes) {
+NDEFMessage::NDEFMessage(const uint8_t* data, const int numBytes) {
     // DumpHex(data, numBytes, 16);
 
     _recordCount = 0;
@@ -50,8 +50,8 @@ NdefMessage::NdefMessage(const uint8_t* data, const int numBytes) {
         bool il = tnf_uint8_t & 0x8;
         uint8_t tnf = (tnf_uint8_t & 0x7);
 
-        NdefRecord record = NdefRecord();
-        record.setTnf(tnf);
+        NDEFRecord record = NDEFRecord();
+        record.SetTnf(tnf);
 
         index++;
         int typeLength = data[index];
@@ -75,38 +75,38 @@ NdefMessage::NdefMessage(const uint8_t* data, const int numBytes) {
         }
 
         index++;
-        record.setType(&data[index], typeLength);
+        record.SetType(&data[index], typeLength);
         index += typeLength;
 
         if (il) {
-            record.setId(&data[index], idLength);
+            record.SetId(&data[index], idLength);
             index += idLength;
         }
 
-        record.setPayload(&data[index], payloadLength);
+        record.SetPayload(&data[index], payloadLength);
         index += payloadLength;
 
-        addRecord(record);
+        AddRecord(record);
 
         if (me) break;  // last message
     }
 }
 
-NdefMessage::NdefMessage(const NdefMessage& rhs) {
+NDEFMessage::NDEFMessage(const NDEFMessage& rhs) {
     _recordCount = rhs._recordCount;
     for (unsigned int i = 0; i < _recordCount; i++) {
         _records[i] = rhs._records[i];
     }
 }
 
-NdefMessage::~NdefMessage() {}
+NDEFMessage::~NDEFMessage() {}
 
-NdefMessage& NdefMessage::operator=(const NdefMessage& rhs) {
+NDEFMessage& NDEFMessage::operator=(const NDEFMessage& rhs) {
     if (this != &rhs) {
         // delete existing records
         for (unsigned int i = 0; i < _recordCount; i++) {
             // TODO Dave: is this the right way to delete existing records?
-            _records[i] = NdefRecord();
+            _records[i] = NDEFRecord();
         }
 
         _recordCount = rhs._recordCount;
@@ -117,29 +117,29 @@ NdefMessage& NdefMessage::operator=(const NdefMessage& rhs) {
     return *this;
 }
 
-unsigned int NdefMessage::getRecordCount() { return _recordCount; }
+unsigned int NDEFMessage::GetRecordCount() { return _recordCount; }
 
-int NdefMessage::getEncodedSize() {
+int NDEFMessage::GetEncodedSize() {
     int size = 0;
     for (unsigned int i = 0; i < _recordCount; i++) {
-        size += _records[i].getEncodedSize();
+        size += _records[i].GetEncodedSize();
     }
     return size;
 }
 
 // TODO change this to return uint8_t*
-void NdefMessage::encode(uint8_t* data) {
-    // assert sizeof(data) >= getEncodedSize()
+void NDEFMessage::Encode(uint8_t* data) {
+    // assert sizeof(data) >= GetEncodedSize()
     uint8_t* data_ptr = &data[0];
 
     for (unsigned int i = 0; i < _recordCount; i++) {
-        _records[i].encode(data_ptr, i == 0, (i + 1) == _recordCount);
-        // TODO can NdefRecord.encode return the record size?
-        data_ptr += _records[i].getEncodedSize();
+        _records[i].Encode(data_ptr, i == 0, (i + 1) == _recordCount);
+        // TODO can NDEFRecord.Encode return the record size?
+        data_ptr += _records[i].GetEncodedSize();
     }
 }
 
-bool NdefMessage::addRecord(NdefRecord& record) {
+bool NDEFMessage::AddRecord(NDEFRecord& record) {
     if (_recordCount < MAX_NDEF_RECORDS) {
         _records[_recordCount] = record;
         _recordCount++;
@@ -149,39 +149,39 @@ bool NdefMessage::addRecord(NdefRecord& record) {
     }
 }
 
-void NdefMessage::addMimeMediaRecord(std::string mimeType,
+void NDEFMessage::AddMimeMediaRecord(std::string mimeType,
                                      std::string payload) {
     uint8_t payloadBytes[payload.length() + 1];
     // payload.getBytes(payloadBytes, sizeof(payloadBytes));
     std::copy(payload.begin(), payload.end(), payloadBytes);
 
-    addMimeMediaRecord(mimeType, payloadBytes, payload.length());
+    AddMimeMediaRecord(mimeType, payloadBytes, payload.length());
 }
 
-void NdefMessage::addMimeMediaRecord(std::string mimeType, uint8_t* payload,
+void NDEFMessage::AddMimeMediaRecord(std::string mimeType, uint8_t* payload,
                                      int payloadLength) {
-    NdefRecord r = NdefRecord();
-    r.setTnf(TNF_MIME_MEDIA);
+    NDEFRecord r = NDEFRecord();
+    r.SetTnf(TNF_MIME_MEDIA);
 
     uint8_t type[mimeType.length() + 1];
     // mimeType.getBytes(type, sizeof(type));
     std::copy(mimeType.begin(), mimeType.end(), type);
-    r.setType(type, mimeType.length());
+    r.SetType(type, mimeType.length());
 
-    r.setPayload(payload, payloadLength);
+    r.SetPayload(payload, payloadLength);
 
-    addRecord(r);
+    AddRecord(r);
 }
 
-void NdefMessage::addTextRecord(std::string text) { addTextRecord(text, "en"); }
+void NDEFMessage::AddTextRecord(std::string text) { AddTextRecord(text, "en"); }
 
-void NdefMessage::addTextRecord(std::string text, std::string encoding) {
-    NdefRecord r = NdefRecord();
-    r.setTnf(TNF_WELL_KNOWN);
+void NDEFMessage::AddTextRecord(std::string text, std::string encoding) {
+    NDEFRecord r = NDEFRecord();
+    r.SetTnf(TNF_WELL_KNOWN);
 
     uint8_t RTD_TEXT[1] = {
         0x54};  // TODO this should be a constant or preprocessor
-    r.setType(RTD_TEXT, sizeof(RTD_TEXT));
+    r.SetType(RTD_TEXT, sizeof(RTD_TEXT));
 
     // X is a placeholder for encoding length
     // TODO is it more efficient to build w/o string concatenation?
@@ -194,18 +194,18 @@ void NdefMessage::addTextRecord(std::string text, std::string encoding) {
     // replace X with the real encoding length
     payload[0] = encoding.length();
 
-    r.setPayload(payload, payloadString.length());
+    r.SetPayload(payload, payloadString.length());
 
-    addRecord(r);
+    AddRecord(r);
 }
 
-void NdefMessage::addUriRecord(std::string uri) {
-    NdefRecord* r = new NdefRecord();
-    r->setTnf(TNF_WELL_KNOWN);
+void NDEFMessage::AddUriRecord(std::string uri) {
+    NDEFRecord* r = new NDEFRecord();
+    r->SetTnf(TNF_WELL_KNOWN);
 
     uint8_t RTD_URI[1] = {
         0x55};  // TODO this should be a constant or preprocessor
-    r->setType(RTD_URI, sizeof(RTD_URI));
+    r->SetType(RTD_URI, sizeof(RTD_URI));
 
     // X is a placeholder for identifier code
     std::string payloadString = "X" + uri;
@@ -217,38 +217,38 @@ void NdefMessage::addUriRecord(std::string uri) {
     // add identifier code 0x0, meaning no prefix substitution
     payload[0] = 0x0;
 
-    r->setPayload(payload, payloadString.length());
+    r->SetPayload(payload, payloadString.length());
 
-    addRecord(*r);
+    AddRecord(*r);
     delete (r);
 }
 
-void NdefMessage::addEmptyRecord() {
-    NdefRecord* r = new NdefRecord();
-    r->setTnf(TNF_EMPTY);
-    addRecord(*r);
+void NDEFMessage::AddEmptyRecord() {
+    NDEFRecord* r = new NDEFRecord();
+    r->SetTnf(TNF_EMPTY);
+    AddRecord(*r);
     delete (r);
 }
 
-NdefRecord NdefMessage::getRecord(int index) {
+NDEFRecord NDEFMessage::GetRecord(int index) {
     if (index > -1 && index < static_cast<int>(_recordCount)) {
         return _records[index];
     } else {
-        return NdefRecord();  // would rather return NULL
+        return NDEFRecord();  // would rather return NULL
     }
 }
 
-NdefRecord NdefMessage::operator[](int index) { return getRecord(index); }
+NDEFRecord NDEFMessage::operator[](int index) { return GetRecord(index); }
 
-std::string NdefMessage::toString() {
+std::string NDEFMessage::ToString() {
     std::stringstream result;
     result << "NDEF Message " << _recordCount << " record" << std::flush;
     _recordCount == 1 ? result << ", " << std::flush
                       : result << "s, " << std::flush;
-    result << getEncodedSize() << " bytes" << std::endl;
+    result << GetEncodedSize() << " bytes" << std::endl;
 
     for (unsigned int i = 0; i < _recordCount; i++) {
-        result << _records[i].toString() << std::endl;
+        result << _records[i].ToString() << std::endl;
     }
     return result.str();
 }

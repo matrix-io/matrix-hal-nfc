@@ -7,6 +7,7 @@
 #include <iostream>
 
 #include "../data/ndef_content.h"
+#include "./ndef_parse/ndef_message.h"
 
 #include "../nfc_utility.h"
 
@@ -20,9 +21,10 @@ class NDEF {
     NFCUtility* nfc_utility;
     NDEF(NFCInit* nfc_init, NFCUtility* nfc_utility)
         : nfc_init(nfc_init), nfc_utility(nfc_utility){};
-    int ReadNDEF(NDEFContent* ndef_content);
-    int WriteNDEF(NDEFContent* ndef_content);
-    int EraseNDEF();
+    int Read(NDEFContent* ndef_content);
+    int Write(NDEFContent* ndef_content);
+    int Write(NDEFMessage* ndef_message);
+    int Erase();
 };
 
 }  // namespace matrix_hal

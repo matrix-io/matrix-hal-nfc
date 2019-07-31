@@ -24,14 +24,11 @@ int writeToNewTag(hal::NFC &nfc, hal::NFCData &nfc_data) {
     char temp = 'x';
     while (temp != '\n') std::cin.get(temp);
     nfc.Activate();
-    NdefMessage message = NdefMessage();
-    message.addUriRecord("http://docs.matrix.one");
-    cout << message.toString() << endl;
-
-    nfc_data.ndef.content = std::vector<uint8_t>(message.getEncodedSize());
-    message.encode(nfc_data.ndef.content.data());
-    nfc.ndef.EraseNDEF();
-    nfc.ndef.WriteNDEF(&nfc_data.ndef);
+    NDEFMessage message = NDEFMessage();
+    message.AddUriRecord("http://docs.matrix.one");
+    cout << "Message Info:" << endl;
+    cout << message.ToString() << endl;
+    nfc.ndef.Write(&message);
     cout << "Wrote to new Tag" << endl;
     nfc.Deactivate();
     return 0;
@@ -55,13 +52,14 @@ int main() {
 
     do {
         nfc.Activate();
-        nfc.ndef.ReadNDEF(&nfc_data.ndef);
+        nfc.ndef.Read(&nfc_data.ndef);
         nfc.Deactivate();
         if (nfc_data.ndef.recently_updated) {
             if (nfc_data.ndef.valid) {
                 cout << endl;
                 cout << "String:\n" << nfc_data.ndef.ToString() << endl;
                 cout << "Hex:\n" << nfc_data.ndef.ToHex() << endl;
+                cout << endl;
             }
             writeToNewTag(nfc, nfc_data);
             for (hal::LedValue &led : everloop_image.leds) {

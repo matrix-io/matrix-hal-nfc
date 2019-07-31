@@ -28,10 +28,10 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
 
-#include "NdefRecord.h"
+#include "ndef_record.h"
 
-NdefRecord::NdefRecord() {
-    // Serial.println("NdefRecord Constructor 1");
+NDEFRecord::NDEFRecord() {
+    // Serial.println("NDEFRecord Constructor 1");
     _tnf = 0;
     _typeLength = 0;
     _payloadLength = 0;
@@ -41,8 +41,8 @@ NdefRecord::NdefRecord() {
     _id = (uint8_t *)NULL;
 }
 
-NdefRecord::NdefRecord(const NdefRecord &rhs) {
-    // Serial.println("NdefRecord Constructor 2 (copy)");
+NDEFRecord::NDEFRecord(const NDEFRecord &rhs) {
+    // Serial.println("NDEFRecord Constructor 2 (copy)");
 
     _tnf = rhs._tnf;
     _typeLength = rhs._typeLength;
@@ -68,10 +68,10 @@ NdefRecord::NdefRecord(const NdefRecord &rhs) {
     }
 }
 
-// TODO NdefRecord::NdefRecord(tnf, type, payload, id)
+// TODO NDEFRecord::NDEFRecord(tnf, type, payload, id)
 
-NdefRecord::~NdefRecord() {
-    // Serial.println("NdefRecord Destructor");
+NDEFRecord::~NDEFRecord() {
+    // Serial.println("NDEFRecord Destructor");
     if (_typeLength) {
         free(_type);
     }
@@ -85,8 +85,8 @@ NdefRecord::~NdefRecord() {
     }
 }
 
-NdefRecord &NdefRecord::operator=(const NdefRecord &rhs) {
-    // Serial.println("NdefRecord ASSIGN");
+NDEFRecord &NDEFRecord::operator=(const NDEFRecord &rhs) {
+    // Serial.println("NDEFRecord ASSIGN");
 
     if (this != &rhs) {
         // free existing
@@ -126,7 +126,7 @@ NdefRecord &NdefRecord::operator=(const NdefRecord &rhs) {
 }
 
 // size of records in uint8_ts
-int NdefRecord::getEncodedSize() {
+int NDEFRecord::GetEncodedSize() {
     int size = 2;  // tnf + typeLength
     if (_payloadLength > 0xFF) {
         size += 4;
@@ -143,12 +143,12 @@ int NdefRecord::getEncodedSize() {
     return size;
 }
 
-void NdefRecord::encode(uint8_t *data, bool firstRecord, bool lastRecord) {
-    // assert data > getEncodedSize()
+void NDEFRecord::Encode(uint8_t *data, bool firstRecord, bool lastRecord) {
+    // assert data > GetEncodedSize()
 
     uint8_t *data_ptr = &data[0];
 
-    *data_ptr = getTnfByte(firstRecord, lastRecord);
+    *data_ptr = GetTnfByte(firstRecord, lastRecord);
     data_ptr += 1;
 
     *data_ptr = _typeLength;
@@ -184,7 +184,7 @@ void NdefRecord::encode(uint8_t *data, bool firstRecord, bool lastRecord) {
     data_ptr += _payloadLength;
 }
 
-uint8_t NdefRecord::getTnfByte(bool firstRecord, bool lastRecord) {
+uint8_t NDEFRecord::GetTnfByte(bool firstRecord, bool lastRecord) {
     int value = _tnf;
 
     if (firstRecord) {  // mb
@@ -211,17 +211,17 @@ uint8_t NdefRecord::getTnfByte(bool firstRecord, bool lastRecord) {
     return value;
 }
 
-uint8_t NdefRecord::getTnf() { return _tnf; }
+uint8_t NDEFRecord::GetTnf() { return _tnf; }
 
-void NdefRecord::setTnf(uint8_t tnf) { _tnf = tnf; }
+void NDEFRecord::SetTnf(uint8_t tnf) { _tnf = tnf; }
 
-unsigned int NdefRecord::getTypeLength() { return _typeLength; }
+unsigned int NDEFRecord::GetTypeLength() { return _typeLength; }
 
-int NdefRecord::getPayloadLength() { return _payloadLength; }
+int NDEFRecord::GetPayloadLength() { return _payloadLength; }
 
-unsigned int NdefRecord::getIdLength() { return _idLength; }
+unsigned int NDEFRecord::GetIdLength() { return _idLength; }
 
-std::string NdefRecord::getType() {
+std::string NDEFRecord::GetType() {
     char type[_typeLength + 1];
     memcpy(type, _type, _typeLength);
     type[_typeLength] = '\0';  // null terminate
@@ -229,9 +229,9 @@ std::string NdefRecord::getType() {
 }
 
 // this assumes the caller created type correctly
-void NdefRecord::getType(uint8_t *type) { memcpy(type, _type, _typeLength); }
+void NDEFRecord::GetType(uint8_t *type) { memcpy(type, _type, _typeLength); }
 
-void NdefRecord::setType(const uint8_t *type, const unsigned int numBytes) {
+void NDEFRecord::SetType(const uint8_t *type, const unsigned int numBytes) {
     if (_typeLength) {
         free(_type);
     }
@@ -242,11 +242,11 @@ void NdefRecord::setType(const uint8_t *type, const unsigned int numBytes) {
 }
 
 // assumes the caller sized payload properly
-void NdefRecord::getPayload(uint8_t *payload) {
+void NDEFRecord::getPayload(uint8_t *payload) {
     memcpy(payload, _payload, _payloadLength);
 }
 
-void NdefRecord::setPayload(const uint8_t *payload, const int numBytes) {
+void NDEFRecord::SetPayload(const uint8_t *payload, const int numBytes) {
     if (_payloadLength) {
         free(_payload);
     }
@@ -256,16 +256,16 @@ void NdefRecord::setPayload(const uint8_t *payload, const int numBytes) {
     _payloadLength = numBytes;
 }
 
-std::string NdefRecord::getId() {
+std::string NDEFRecord::GetId() {
     char id[_idLength + 1];
     memcpy(id, _id, _idLength);
     id[_idLength] = '\0';  // null terminate
     return std::string(id);
 }
 
-void NdefRecord::getId(uint8_t *id) { memcpy(id, _id, _idLength); }
+void NDEFRecord::GetId(uint8_t *id) { memcpy(id, _id, _idLength); }
 
-void NdefRecord::setId(const uint8_t *id, const unsigned int numBytes) {
+void NDEFRecord::SetId(const uint8_t *id, const unsigned int numBytes) {
     if (_idLength) {
         free(_id);
     }
@@ -287,7 +287,7 @@ std::string BytesToString(const uint8_t *vec, const uint8_t size) {
     return result.str();
 }
 
-std::string NdefRecord::toString() {
+std::string NDEFRecord::ToString() {
     std::stringstream result;
     result << "NDEF Record" << std::flush;
     result << " TNF 0x" << std::setfill('0') << std::hex << std::uppercase
@@ -336,6 +336,6 @@ std::string NdefRecord::toString() {
         result << "Id" << std::endl;
         result << BytesToString(_id, _idLength) << std::endl;
     }
-    result << "Record is " << getEncodedSize() << " bytes" << std::flush;
+    result << "Record is " << GetEncodedSize() << " bytes" << std::flush;
     return result.str();
 }

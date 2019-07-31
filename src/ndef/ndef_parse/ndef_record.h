@@ -47,38 +47,38 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
 #define TNF_UNCHANGED 0x06
 #define TNF_RESERVED 0x07
 
-class NdefRecord {
+class NDEFRecord {
    public:
-    NdefRecord();
-    NdefRecord(const NdefRecord &rhs);
-    ~NdefRecord();
-    NdefRecord &operator=(const NdefRecord &rhs);
+    NDEFRecord();
+    NDEFRecord(const NDEFRecord &rhs);
+    ~NDEFRecord();
+    NDEFRecord &operator=(const NDEFRecord &rhs);
 
-    int getEncodedSize();
-    void encode(uint8_t *data, bool firstRecord, bool lastRecord);
+    int GetEncodedSize();
+    void Encode(uint8_t *data, bool firstRecord, bool lastRecord);
 
-    unsigned int getTypeLength();
-    int getPayloadLength();
-    unsigned int getIdLength();
+    unsigned int GetTypeLength();
+    int GetPayloadLength();
+    unsigned int GetIdLength();
 
-    uint8_t getTnf();
-    void getType(uint8_t *type);
+    uint8_t GetTnf();
+    void GetType(uint8_t *type);
     void getPayload(uint8_t *payload);
-    void getId(uint8_t *id);
+    void GetId(uint8_t *id);
 
     // convenience methods
-    std::string getType();
-    std::string getId();
+    std::string GetType();
+    std::string GetId();
 
-    void setTnf(uint8_t tnf);
-    void setType(const uint8_t *type, const unsigned int numBytes);
-    void setPayload(const uint8_t *payload, const int numBytes);
-    void setId(const uint8_t *id, const unsigned int numBytes);
+    void SetTnf(uint8_t tnf);
+    void SetType(const uint8_t *type, const unsigned int numBytes);
+    void SetPayload(const uint8_t *payload, const int numBytes);
+    void SetId(const uint8_t *id, const unsigned int numBytes);
 
-    std::string toString();
+    std::string ToString();
 
    private:
-    uint8_t getTnfByte(bool firstRecord, bool lastRecord);
+    uint8_t GetTnfByte(bool firstRecord, bool lastRecord);
     uint8_t _tnf;  // 3 bit
     unsigned int _typeLength;
     int _payloadLength;
