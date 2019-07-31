@@ -2,48 +2,71 @@
 
 matrix-hal-nfc is a simple, easy to use wrapper for using NXP's NFC Reader Library with the PN512 chip on the [MATRIX Creator](https://matrix-io.github.io/matrix-documentation/matrix-creator/overview/).
 
-Currently the wrapper only supports detecting and reading NFC tags.
 
-## License
-=====
-All files in this repository (not including the proprietary NXP NFC Reader Library) are distributed under the GPL3 license.
+## Roadmap
+- [x] Reading Info (All tags)
+- [x] Reading (MIFARE Ultralight & NTAG)
+- [x] Writing (MIFARE Ultralight & NTAG)
+- [ ] Improve installation & usage
 
-## External components
+# Prerequisites
+Before moving on, be sure to have 
+[setup](https://matrix-io.github.io/matrix-documentation/matrix-creator/device-setup/) a MATRIX Creator with 
+[MATRIX HAL](https://matrix-io.github.io/matrix-documentation/matrix-hal/getting-started/installation-package/) 
+installed (HAL is needed for LEDs & matrix-creator-init).
 
-NXP releases the source code to their library upon registering an account with their website.
+Download the following packages to your Raspberry Pi.
+```
+sudo apt install cmake git
+```
 
-Start by downloading the library files from here:
 
-https://www.nxp.com/products/identification-security/secure-car-access/nfc-reader-library-software-support-for-nfc-frontend-solutions:NFC-READER-LIBRARY?tab=In-Depth_Tab#nogo
+## Download The NXP Library
+> Due to NXP's terms & conditions, we cannot directly distribute the library to our users.
 
-After you click download, click `4.04.05 NFC Reader Library for PN512`.
+You can download the **NFC Reader Library for PN512** by creating an account on the NXP website and downloading the zip file [**here**](https://www.nxp.com/products/identification-security/secure-car-access/nfc-reader-library-software-support-for-nfc-frontend-solutions:NFC-READER-LIBRARY?tab=In-Depth_Tab#nogo).
 
-Then click `NFC Reader Library v4.040.05 R2 for PNEV512B including all software examples`.
 
-A file called SW297940.zip should begin downloading.
+Click the download button.
 
-Then clone this repo with
+<img width=650 src="images/nxp_download_link.png"/>
+
+Click the `4.04.05 NFC Reader Library for PN512`.
+
+<img width=650 src="images/pn512_library.png"/>
+
+Then click `SW297940.zip` to download `NFC Reader Library v4.040.05 R2 for PNEV512B including all software examples`.
+
+<img width=650 src="images/pn512_zip.png"/>
+
+## Install MATRIX HAL NXP
+
+To start installing the NXP library, clone this repository.
 
 ```
 git clone https://github.com/matrix-io/matrix-hal-nfc.git
 ```
 
-Move the SW297940.zip into the cloned matrix-hal-nfc folder.
+Now move the `SW297940.zip` file you downloaded into the matrix-hal-nfc folder. If you don't know how to transfer files into your Raspberry Pi, follow this [simple guide on using an FTP client](https://www.techmuzz.com/how-to/raspberrypi/transfer-files-raspberry-pi-computer/).
 
-Once complete, you can apply the MATRIX Creator specific config patch and install the library into /usr/include/matrix_nfc/nxp_nfc with the following commands:
+Once complete, you can apply our MATRIX Creator config patch and install the library into `/usr/local/include/matrix_nfc/nxp_nfc` with the following commands:
 
 ```
 unzip SW297940.zip -d nxp_nfc && patch < creator_nfc_pins.patch ./nxp_nfc/NxpNfcRdLib/intfs/phPlatform_Port_Pi_RC523.h && sudo mkdir -p /usr/local/include/matrix_nfc/nxp_nfc/ && sudo cp -r nxp_nfc/ /usr/local/include/matrix_nfc/ && sudo chmod 755 -R /usr/local/include/matrix_nfc/ && sudo rm -r nxp_nfc
 ```
 
-## Installation
+Inside matrix-hal-nxp, you need to run the build script to finish the library installation. This will install the header files in `/usr/local/include/matrix_nfc/` and the libmatrix_hal_nfc.so library file in `/usr/local/lib/`.
 
-Please ensure that you have first followed the above steps and that the NXP Library is extracted to /usr/include/matrix_nfc/nxp_nfc.
+```
+./build.sh
+sudo ldconfig
+```
 
-In the root directory of this repository there is a rebuild.sh file. This will run cmake and make, and also install the needed headers in `/usr/local/include/matrix_nfc/` and the libmatrix_hal_nfc.so library file in `/usr/local/lib/`.
+## Running The NFC Examples
 
-After building is complete, the compiled nfc_read example will be in the build folder.
+After building is complete, a few compiled examples will be in the `build/examples` folder.
 
-## Examples
-
-Currently the examples reside in ./examples/. This shows the intended wrapper usage.
+You can compile your own programs by using:
+```
+g++ -o YOUR_OUTPUT YOUR_INPUT -std=c++11 -DNXPBUILD__PH_RASPBERRY_PI -I/usr/local/include/matrix_nfc/nxp_nfc/NxpNfcRdLib/types -I/usr/local/include/matrix_nfc/nxp_nfc/NxpNfcRdLib/intfs -lmatrix_hal_nfc -lmatrix_creator_hal
+```
