@@ -5,9 +5,10 @@ matrix-hal-nfc is a simple, easy to use wrapper for using NXP's NFC Reader Libra
 
 ## Roadmap
 - [x] Reading Info (All tags)
-- [x] Reading (MIFARE Ultralight & NTAG)
-- [x] Writing (MIFARE Ultralight & NTAG)
-- [ ] Improve installation & usage
+- [x] Reading Page (MIFARE Ultralight & NTAG)
+- [x] Writing Page (MIFARE Ultralight & NTAG)
+- [x] Reading NDEF (MIFARE Ultralight & NTAG)
+- [x] Writing NDEF (MIFARE Ultralight & NTAG)
 
 # Prerequisites
 Before moving on, be sure to have 
@@ -47,12 +48,12 @@ To start installing the NXP library, clone this repository.
 git clone https://github.com/matrix-io/matrix-hal-nfc.git
 ```
 
-Now move the `SW297940.zip` file you downloaded into the matrix-hal-nfc folder. If you don't know how to transfer files into your Raspberry Pi, follow this [simple guide on using an FTP client](https://www.techmuzz.com/how-to/raspberrypi/transfer-files-raspberry-pi-computer/).
+Now move the `SW297940.zip` file you downloaded into the `matrix-hal-nfc` folder. If you don't know how to transfer files into your Raspberry Pi, follow this [simple guide on using an FTP client](https://www.techmuzz.com/how-to/raspberrypi/transfer-files-raspberry-pi-computer/).
 
-Once complete, you can apply our MATRIX Creator config patch and install the library into `/usr/local/include/matrix_nfc/nxp_nfc` with the following commands:
+Once complete, you can apply our MATRIX Creator config patch and install the library into `/usr/local/include/matrix_nfc/nxp_nfc` by running the following script. Please ensure that you have first changed directory to the `matrix-hal-nfc` folder and have placed `SW297940.zip`inside.
 
 ```
-unzip SW297940.zip -d nxp_nfc && patch < creator_nfc_pins.patch ./nxp_nfc/NxpNfcRdLib/intfs/phPlatform_Port_Pi_RC523.h && sudo mkdir -p /usr/local/include/matrix_nfc/nxp_nfc/ && sudo cp -r nxp_nfc/ /usr/local/include/matrix_nfc/ && sudo chmod 755 -R /usr/local/include/matrix_nfc/ && sudo rm -r nxp_nfc
+./install_nxp.sh
 ```
 
 Inside matrix-hal-nxp, you need to run the build script to finish the library installation. This will install the header files in `/usr/local/include/matrix_nfc/` and the libmatrix_hal_nfc.so library file in `/usr/local/lib/`.
@@ -70,3 +71,10 @@ You can compile your own programs by using:
 ```
 g++ -o YOUR_OUTPUT YOUR_INPUT -std=c++11 -DNXPBUILD__PH_RASPBERRY_PI -I/usr/local/include/matrix_nfc/nxp_nfc/NxpNfcRdLib/types -I/usr/local/include/matrix_nfc/nxp_nfc/NxpNfcRdLib/intfs -lmatrix_hal_nfc -lmatrix_creator_hal
 ```
+
+## Credits
+
+The NDEF parsing library in src/ndef/ndef_parse is Don's NDEF library for Arduino, modified for this wrapper.
+https://github.com/don/NDEF
+
+The NXP NFC Library is provided by NXP, and can not be redistributed without permission of NXP.

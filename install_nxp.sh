@@ -1,0 +1,2 @@
+#! /bin/bash
+unzip SW297940.zip -d nxp_nfc && patch < creator_nfc_pins.patch ./nxp_nfc/NxpNfcRdLib/intfs/phPlatform_Port_Pi_RC523.h && sudo mkdir -p /usr/local/include/matrix_nfc/nxp_nfc/ && sudo cp -r nxp_nfc/ /usr/local/include/matrix_nfc/ && sudo chmod 755 -R /usr/local/include/matrix_nfc/ && sudo rm -r nxp_nfc

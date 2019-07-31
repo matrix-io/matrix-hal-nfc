@@ -1,6 +1,11 @@
 #include <chrono>
+#include <cstdint>
+#include <iomanip>
 #include <iostream>
+#include <sstream>
+#include <string>
 #include <thread>
+#include <vector>
 
 #include "matrix_hal/everloop.h"
 #include "matrix_hal/everloop_image.h"
@@ -13,6 +18,21 @@ using std::cout;
 using std::endl;
 
 namespace hal = matrix_hal;
+
+int writeToNewTag(hal::NFC &nfc, hal::NFCData &nfc_data) {
+    cout << "Press enter to write" << endl;
+    char temp = 'x';
+    while (temp != '\n') std::cin.get(temp);
+    nfc.Activate();
+    NDEFMessage message = NDEFMessage();
+    message.AddUriRecord("http://docs.matrix.one");
+    cout << "Message Info:" << endl;
+    cout << message.ToString() << endl;
+    nfc.ndef.Write(&message);
+    cout << "Wrote to new Tag" << endl;
+    nfc.Deactivate();
+    return 0;
+}
 
 int main() {
     hal::MatrixIOBus bus;
@@ -32,11 +52,16 @@ int main() {
 
     do {
         nfc.Activate();
-        nfc.ReadInfo(&nfc_data.info);
+        nfc.ndef.Read(&nfc_data.ndef);
         nfc.Deactivate();
-
-        if (nfc_data.info.recently_updated) {
-            cout << nfc_data.info.ToString() << endl << endl;
+        if (nfc_data.ndef.recently_updated) {
+            if (nfc_data.ndef.valid) {
+                cout << endl;
+                cout << "String:\n" << nfc_data.ndef.ToString() << endl;
+                cout << "Hex:\n" << nfc_data.ndef.ToHex() << endl;
+                cout << endl;
+            }
+            writeToNewTag(nfc, nfc_data);
             for (hal::LedValue &led : everloop_image.leds) {
                 led.red = 0;
                 led.green = 20;

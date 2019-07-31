@@ -1,6 +1,11 @@
 #include <chrono>
+#include <cstdint>
+#include <iomanip>
 #include <iostream>
+#include <sstream>
+#include <string>
 #include <thread>
+#include <vector>
 
 #include "matrix_hal/everloop.h"
 #include "matrix_hal/everloop_image.h"
@@ -32,11 +37,15 @@ int main() {
 
     do {
         nfc.Activate();
-        nfc.ReadInfo(&nfc_data.info);
+        nfc.ndef.Read(&nfc_data.ndef);
         nfc.Deactivate();
 
-        if (nfc_data.info.recently_updated) {
-            cout << nfc_data.info.ToString() << endl << endl;
+        if (nfc_data.ndef.recently_updated) {
+            if (nfc_data.ndef.valid) {
+                cout << endl;
+                cout << "String:\n" << nfc_data.ndef.ToString() << endl;
+                cout << "Hex:\n" << nfc_data.ndef.ToHex() << endl;
+            }
             for (hal::LedValue &led : everloop_image.leds) {
                 led.red = 0;
                 led.green = 20;
