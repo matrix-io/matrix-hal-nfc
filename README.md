@@ -74,6 +74,5 @@ g++ -o YOUR_OUTPUT YOUR_INPUT -std=c++11 -DNXPBUILD__PH_RASPBERRY_PI -I/usr/loca
 ## Credits
 
 The NDEF parsing library in `src/ndef/ndef_parse` is [Don's NDEF Library](https://github.com/don/NDEF) for Arduino; it has been modified for this wrapper.
-https://github.com/don/NDEF
 
 The NXP NFC Library is provided by NXP, and can not be redistributed without permission of NXP.
