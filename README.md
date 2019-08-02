@@ -46,11 +46,12 @@ To start installing the NXP library, clone this repository.
 
 ```
 git clone https://github.com/matrix-io/matrix-hal-nfc.git
+cd matrix-hal-nfc
 ```
 
 Now move the `SW297940.zip` file you downloaded into the `matrix-hal-nfc` folder. If you don't know how to transfer files into your Raspberry Pi, follow this [simple guide on using an FTP client](https://www.techmuzz.com/how-to/raspberrypi/transfer-files-raspberry-pi-computer/).
 
-Once complete, you can apply our MATRIX Creator config patch and install the library into `/usr/local/include/matrix_nfc/nxp_nfc` by running the following script. Please ensure that you have first changed directory to the `matrix-hal-nfc` folder and have placed `SW297940.zip`inside.
+Once complete, you can install the NXP library into `/usr/local/include/matrix_nfc/nxp_nfc` with the following command. Please ensure that you have have placed `SW297940.zip` inside `matrix-hal-nfc`.
 
 ```
 ./install_nxp.sh
