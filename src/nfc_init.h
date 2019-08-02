@@ -72,13 +72,6 @@ class NFCInit {
         pal_iso14443p4;  // Protocol Abstraction Layer ISO I14443-4 component
     phacDiscLoop_Sw_DataParams_t*
         discovery_loop;  // Application Layer Discovery Loop component
-    // Keystore and Crypto components
-    phKeyStore_Sw_DataParams_t keystore;
-    phKeyStore_Sw_KeyEntry_t key_entries[KEYSTORE_ENTRIES];
-    phKeyStore_Sw_KeyVersionPair_t key_version_pairs[KEYSTORE_ENTRIES];
-    phKeyStore_Sw_KUCEntry_t KUC_entries[KEYSTORE_ENTRIES];
-    phCryptoSym_Sw_DataParams_t crypto_sym;
-    phCryptoRng_Sw_DataParams_t crypto_rng;
     // NFC Standard Lib Components (Adding additional functionality)
     phpalMifare_Sw_DataParams_t
         pal_mifare;  // Protocol Abstraction Layer Mifare component
