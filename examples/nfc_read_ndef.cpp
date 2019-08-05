@@ -20,54 +20,55 @@ using std::endl;
 namespace hal = matrix_hal;
 
 int main() {
-  hal::MatrixIOBus bus;
+    hal::MatrixIOBus bus;
 
-  if (!bus.Init()) return false;
+    if (!bus.Init()) return false;
 
-  hal::EverloopImage everloop_image(bus.MatrixLeds());
+    hal::EverloopImage everloop_image(bus.MatrixLeds());
 
-  hal::Everloop everloop;
+    hal::Everloop everloop;
 
-  everloop.Setup(&bus);
+    everloop.Setup(&bus);
 
-  hal::NFC nfc;
-  hal::NFCData nfc_data;
+    hal::NFC nfc;
+    hal::NFCData nfc_data;
 
-  cout << "Scan a Tag, Any Tag!" << endl;
+    cout << "Scan a Tag, Any Tag!" << endl;
 
-  do {
-    nfc.Activate();
-    nfc.ndef.Read(&nfc_data.ndef);
-    nfc.Deactivate();
+    do {
+        nfc.Activate();
+        nfc.ndef.Read(&nfc_data.ndef);
+        nfc.Deactivate();
 
-    if (nfc_data.ndef.recently_updated) {
-      if (nfc_data.ndef.valid) {
-        cout << endl;
-        cout << "String:\n" << nfc_data.ndef.ToString() << endl;
-        cout << "Hex:\n" << nfc_data.ndef.ToHex() << endl;
-        cout << "Output from NDEFMessage parser:" << endl;
-        hal::NDEFMessage ndef_message = hal::NDEFMessage(&nfc_data.ndef);
-        cout << ndef_message.ToString() << endl;
-      }
-      for (hal::LedValue &led : everloop_image.leds) {
-        led.red = 0;
-        led.green = 20;
-        led.blue = 0;
-        led.white = 0;
-      }
-    } else {
-      for (hal::LedValue &led : everloop_image.leds) {
-        led.red = 0;
-        led.green = 0;
-        led.blue = 0;
-        led.white = 0;
-      }
-    }
+        if (nfc_data.ndef.recently_updated) {
+            if (nfc_data.ndef.valid) {
+                cout << endl;
+                cout << "String:\n" << nfc_data.ndef.ToString() << endl;
+                cout << "Hex:\n" << nfc_data.ndef.ToHex() << endl;
+                cout << "Output from NDEFMessage parser:" << endl;
+                hal::NDEFMessage ndef_message =
+                    hal::NDEFMessage(&nfc_data.ndef);
+                cout << ndef_message.ToString() << endl;
+            }
+            for (hal::LedValue &led : everloop_image.leds) {
+                led.red = 0;
+                led.green = 20;
+                led.blue = 0;
+                led.white = 0;
+            }
+        } else {
+            for (hal::LedValue &led : everloop_image.leds) {
+                led.red = 0;
+                led.green = 0;
+                led.blue = 0;
+                led.white = 0;
+            }
+        }
 
-    everloop.Write(&everloop_image);
+        everloop.Write(&everloop_image);
 
-    std::this_thread::sleep_for(std::chrono::microseconds(10000));
-  } while (true);
+        std::this_thread::sleep_for(std::chrono::microseconds(10000));
+    } while (true);
 
-  return 0;
+    return 0;
 }

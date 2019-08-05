@@ -50,44 +50,44 @@ namespace matrix_hal {
 #define TNF_RESERVED 0x07
 
 class NDEFRecord {
- public:
-  NDEFRecord();
-  NDEFRecord(const NDEFRecord &rhs);
-  ~NDEFRecord();
-  NDEFRecord &operator=(const NDEFRecord &rhs);
+   public:
+    NDEFRecord();
+    NDEFRecord(const NDEFRecord &rhs);
+    ~NDEFRecord();
+    NDEFRecord &operator=(const NDEFRecord &rhs);
 
-  int GetEncodedSize();
-  void Encode(uint8_t *data, bool firstRecord, bool lastRecord);
+    int GetEncodedSize();
+    void Encode(uint8_t *data, bool firstRecord, bool lastRecord);
 
-  unsigned int GetTypeLength();
-  int GetPayloadLength();
-  unsigned int GetIdLength();
+    unsigned int GetTypeLength();
+    int GetPayloadLength();
+    unsigned int GetIdLength();
 
-  uint8_t GetTnf();
-  void GetType(uint8_t *type);
-  void getPayload(uint8_t *payload);
-  void GetId(uint8_t *id);
+    uint8_t GetTnf();
+    void GetType(uint8_t *type);
+    void getPayload(uint8_t *payload);
+    void GetId(uint8_t *id);
 
-  // convenience methods
-  std::string GetType();
-  std::string GetId();
+    // convenience methods
+    std::string GetType();
+    std::string GetId();
 
-  void SetTnf(uint8_t tnf);
-  void SetType(const uint8_t *type, const unsigned int numBytes);
-  void SetPayload(const uint8_t *payload, const int numBytes);
-  void SetId(const uint8_t *id, const unsigned int numBytes);
+    void SetTnf(uint8_t tnf);
+    void SetType(const uint8_t *type, const unsigned int numBytes);
+    void SetPayload(const uint8_t *payload, const int numBytes);
+    void SetId(const uint8_t *id, const unsigned int numBytes);
 
-  std::string ToString();
+    std::string ToString();
 
- private:
-  uint8_t GetTnfByte(bool firstRecord, bool lastRecord);
-  uint8_t _tnf;  // 3 bit
-  unsigned int _typeLength;
-  int _payloadLength;
-  unsigned int _idLength;
-  uint8_t *_type;
-  uint8_t *_payload;
-  uint8_t *_id;
+   private:
+    uint8_t GetTnfByte(bool firstRecord, bool lastRecord);
+    uint8_t _tnf;  // 3 bit
+    unsigned int _typeLength;
+    int _payloadLength;
+    unsigned int _idLength;
+    uint8_t *_type;
+    uint8_t *_payload;
+    uint8_t *_id;
 };
 
 }  // namespace matrix_hal

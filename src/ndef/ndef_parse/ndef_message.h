@@ -46,35 +46,35 @@ namespace matrix_hal {
 #define MAX_NDEF_RECORDS 4
 
 class NDEFMessage {
- public:
-  NDEFMessage(void);
-  NDEFMessage(const matrix_hal::NDEFContent* content);
-  NDEFMessage(const uint8_t* data, const int numBytes);
-  NDEFMessage(const NDEFMessage& rhs);
-  ~NDEFMessage();
-  NDEFMessage& operator=(const NDEFMessage& rhs);
+   public:
+    NDEFMessage(void);
+    NDEFMessage(const matrix_hal::NDEFContent* content);
+    NDEFMessage(const uint8_t* data, const int numBytes);
+    NDEFMessage(const NDEFMessage& rhs);
+    ~NDEFMessage();
+    NDEFMessage& operator=(const NDEFMessage& rhs);
 
-  int GetEncodedSize();  // need so we can pass array to Encode
-  void Encode(uint8_t* data);
+    int GetEncodedSize();  // need so we can pass array to Encode
+    void Encode(uint8_t* data);
 
-  bool AddRecord(NDEFRecord& record);
-  void AddMimeMediaRecord(std::string mimeType, std::string payload);
-  void AddMimeMediaRecord(std::string mimeType, uint8_t* payload,
-                          int payloadLength);
-  void AddTextRecord(std::string text);
-  void AddTextRecord(std::string text, std::string encoding);
-  void AddUriRecord(std::string uri);
-  void AddEmptyRecord();
+    bool AddRecord(NDEFRecord& record);
+    void AddMimeMediaRecord(std::string mimeType, std::string payload);
+    void AddMimeMediaRecord(std::string mimeType, uint8_t* payload,
+                            int payloadLength);
+    void AddTextRecord(std::string text);
+    void AddTextRecord(std::string text, std::string encoding);
+    void AddUriRecord(std::string uri);
+    void AddEmptyRecord();
 
-  unsigned int GetRecordCount();
-  NDEFRecord GetRecord(int index);
-  NDEFRecord operator[](int index);
+    unsigned int GetRecordCount();
+    NDEFRecord GetRecord(int index);
+    NDEFRecord operator[](int index);
 
-  std::string ToString();
+    std::string ToString();
 
- private:
-  NDEFRecord _records[MAX_NDEF_RECORDS];
-  unsigned int _recordCount;
+   private:
+    NDEFRecord _records[MAX_NDEF_RECORDS];
+    unsigned int _recordCount;
 };
 
 }  // namespace matrix_hal
