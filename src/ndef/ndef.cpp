@@ -3,6 +3,8 @@
 namespace matrix_hal {
 int NDEF::Read(NDEFContent *ndef_content) {
     ndef_content->recently_updated = false;
+    // Check if card activated
+    if (nfc_init->peer_info.dwActivatedType == 0) return CARD_NOT_ACTIVATED;
     uint16_t tag_tech_type = 0;
     uint8_t top_tag_type = 0;
     uint8_t top_tag_state = 0;
@@ -63,6 +65,8 @@ int NDEF::Read(NDEFContent *ndef_content) {
 }
 
 int NDEF::Write(NDEFContent *ndef_content) {
+    // Check if card activated
+    if (nfc_init->peer_info.dwActivatedType == 0) return CARD_NOT_ACTIVATED;
     uint16_t tag_tech_type = 0;
     uint8_t top_tag_type = 0;
     uint8_t top_tag_state = 0;
@@ -93,14 +97,16 @@ int NDEF::Write(NDEFContent *ndef_content) {
     return -nfc_init->nfc_lib_status;
 }
 
-int NDEF::Write(NDEFMessage *ndef_message) {
+int NDEF::Write(NDEFParser *ndef_parser) {
     NDEFContent ndef_content;
-    ndef_content.content = std::vector<uint8_t>(ndef_message->GetEncodedSize());
-    ndef_message->Encode(ndef_content.content.data());
+    ndef_content.content = std::vector<uint8_t>(ndef_parser->GetEncodedSize());
+    ndef_parser->Encode(ndef_content.content.data());
     return Write(&ndef_content);
 }
 
 int NDEF::Erase() {
+    // Check if card activated
+    if (nfc_init->peer_info.dwActivatedType == 0) return CARD_NOT_ACTIVATED;
     uint16_t tag_tech_type = 0;
     uint8_t top_tag_type = 0;
     uint8_t top_tag_state = 0;

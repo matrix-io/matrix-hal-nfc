@@ -3,6 +3,7 @@
 #ifndef MATRIX_HAL_NFC_MFUL_H
 #define MATRIX_HAL_NFC_MFUL_H
 
+#include <iterator>
 #include <vector>
 
 #include "../data/pages_content.h"
@@ -20,6 +21,7 @@ class MFUL {
     NFCUtility* nfc_utility;
     MFUL(NFCInit* nfc_init, NFCUtility* nfc_utility)
         : nfc_init(nfc_init), nfc_utility(nfc_utility){};
+    std::vector<uint8_t> ReadPage(uint8_t page_number, uint8_t size_to_return);
     std::vector<uint8_t> ReadPage(uint8_t page_number);
     int WritePage(uint8_t page_number, std::vector<uint8_t>& write_data);
     int ReadPages(PagesContent* pages_content);

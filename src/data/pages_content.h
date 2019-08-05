@@ -13,6 +13,8 @@ class PagesContent {
    public:
     // True if new tag was read, False if no tag found
     bool recently_updated = false;
+    // True if all pages were read, False if read was interrupted
+    bool read_complete = false;
     // All data read from the NFC Tag
     std::vector<std::vector<uint8_t>> content;
 
@@ -20,6 +22,7 @@ class PagesContent {
     void Reset() {
         // Reset parameters before populating with info from new object
         recently_updated = true;
+        read_complete = false;
         content.clear();
     }
 

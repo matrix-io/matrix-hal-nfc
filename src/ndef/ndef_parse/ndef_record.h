@@ -28,8 +28,8 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
 
-#ifndef NdefRecord_h
-#define NdefRecord_h
+#ifndef MATRIX_HAL_NDEF_RECORD_H
+#define MATRIX_HAL_NDEF_RECORD_H
 
 #include <memory.h>
 #include <cstdint>
@@ -92,4 +92,4 @@ class NDEFRecord {
 
 }  // namespace matrix_hal
 
-#endif
+#endif  // MATRIX_HAL_NDEF_RECORD_H

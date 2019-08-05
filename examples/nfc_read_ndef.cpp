@@ -45,10 +45,9 @@ int main() {
                 cout << endl;
                 cout << "String:\n" << nfc_data.ndef.ToString() << endl;
                 cout << "Hex:\n" << nfc_data.ndef.ToHex() << endl;
-                cout << "Output from NDEFMessage parser:" << endl;
-                hal::NDEFMessage ndef_message =
-                    hal::NDEFMessage(&nfc_data.ndef);
-                cout << ndef_message.ToString() << endl;
+                cout << "Output from NDEF parser:" << endl;
+                hal::NDEFParser ndef_parser = hal::NDEFParser(&nfc_data.ndef);
+                cout << ndef_parser.ToString() << endl;
             }
             for (hal::LedValue &led : everloop_image.leds) {
                 led.red = 0;

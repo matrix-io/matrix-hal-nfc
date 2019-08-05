@@ -24,7 +24,7 @@ int writeToNewTag(hal::NFC &nfc, hal::NFCData &nfc_data) {
     char temp = 'x';
     while (temp != '\n') std::cin.get(temp);
     nfc.Activate();
-    hal::NDEFMessage message = hal::NDEFMessage();
+    hal::NDEFParser message = hal::NDEFParser();
     message.AddUriRecord("http://docs.matrix.one");
     cout << "Message Info:" << endl;
     cout << message.ToString() << endl;
@@ -59,10 +59,9 @@ int main() {
                 cout << endl;
                 cout << "String:\n" << nfc_data.ndef.ToString() << endl;
                 cout << "Hex:\n" << nfc_data.ndef.ToHex() << endl;
-                cout << "Output from NDEFMessage parser:" << endl;
-                hal::NDEFMessage ndef_message =
-                    hal::NDEFMessage(&nfc_data.ndef);
-                cout << ndef_message.ToString() << endl;
+                cout << "Output from NDEF parser:" << endl;
+                hal::NDEFParser ndef_parser = hal::NDEFParser(&nfc_data.ndef);
+                cout << ndef_parser.ToString() << endl;
                 cout << endl;
             }
             writeToNewTag(nfc, nfc_data);

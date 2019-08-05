@@ -2,10 +2,6 @@
 
 #include "nfc.h"
 
-using std::cerr;
-using std::cout;
-using std::endl;
-
 namespace matrix_hal {
 
 int NFC::Activate() {
@@ -32,6 +28,8 @@ int NFC::Deactivate() {
  */
 int NFC::ReadInfo(InfoContent *nfc_info) {
     nfc_info->recently_updated = false;
+    // Check if card activated
+    if (nfc_init.peer_info.dwActivatedType == 0) return CARD_NOT_ACTIVATED;
     uint16_t tag_tech_type = 0;
     // Hook into the discovery loop and pull UID/AQT(A/B)/SAK/Type from there
     nfc_init.nfc_lib_status = phacDiscLoop_GetConfig(

@@ -28,8 +28,8 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
 
-#ifndef NdefMessage_h
-#define NdefMessage_h
+#ifndef MATRIX_HAL_NDEF_PARSER_H
+#define MATRIX_HAL_NDEF_PARSER_H
 
 #include <memory.h>
 #include <cstdint>
@@ -45,14 +45,14 @@ namespace matrix_hal {
 
 #define MAX_NDEF_RECORDS 4
 
-class NDEFMessage {
+class NDEFParser {
    public:
-    NDEFMessage(void);
-    NDEFMessage(const matrix_hal::NDEFContent* content);
-    NDEFMessage(const uint8_t* data, const int numBytes);
-    NDEFMessage(const NDEFMessage& rhs);
-    ~NDEFMessage();
-    NDEFMessage& operator=(const NDEFMessage& rhs);
+    NDEFParser(void);
+    NDEFParser(const matrix_hal::NDEFContent* content);
+    NDEFParser(const uint8_t* data, const int numBytes);
+    NDEFParser(const NDEFParser& rhs);
+    ~NDEFParser();
+    NDEFParser& operator=(const NDEFParser& rhs);
 
     int GetEncodedSize();  // need so we can pass array to Encode
     void Encode(uint8_t* data);
@@ -79,4 +79,4 @@ class NDEFMessage {
 
 }  // namespace matrix_hal
 
-#endif
+#endif  // MATRIX_HAL_NDEF_PARSER_H

@@ -20,7 +20,10 @@ std::string NXPLibStatus(uint32_t status_type);
 std::string NXPSimplifiedLibStatus(uint32_t status_type);
 
 // Defines for wrapper errors
-#define INCORRECT_CARD_FOR_FUNCTION 0x90
+#define CARD_NOT_ACTIVATED 0x4440
+#define INCORRECT_CARD_FOR_FUNCTION 0x4441
+#define PAGES_READ_FINISHED_SUCCESS 0x4442
+#define PAGES_READ_UNFINISHED_ABORTED 0x4443
 
 }  // namespace matrix_hal
 

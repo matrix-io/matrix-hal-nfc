@@ -9,8 +9,17 @@ DescStatus(FunctionName())` and get the error logged. */
 std::string NFCStatus(int64_t status_type) {
     // Handle wrapper errors
     switch (status_type) {
+        case CARD_NOT_ACTIVATED:
+            return "Card Not Activated";
+            break;
         case INCORRECT_CARD_FOR_FUNCTION:
             return "Incorrect Card Type For Function";
+            break;
+        case PAGES_READ_FINISHED_SUCCESS:
+            return "Success";
+            break;
+        case PAGES_READ_UNFINISHED_ABORTED:
+            return "Read unfinished, card was lost";
             break;
         default:
             break;
@@ -68,9 +77,6 @@ std::string NXPSimplifiedLibStatus(uint32_t status_type) {
             break;
         case PH_NFCLIB_STATUS_RF_PEER_LOST:
             return "RF Peer Lost";
-            break;
-        case INCORRECT_CARD_FOR_FUNCTION:
-            return "Incorrect Card Type For Function";
             break;
         default:
             return "Unknown Error";

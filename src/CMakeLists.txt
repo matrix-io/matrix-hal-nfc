@@ -40,7 +40,7 @@ nfc_status.h
 cards/mful.h
 cards/ntag.h
 ndef/ndef.h
-ndef/ndef_parse/ndef_message.h
+ndef/ndef_parse/ndef_parser.h
 ndef/ndef_parse/ndef_record.h
 )
 
@@ -52,7 +52,7 @@ nfc_status.cpp
 cards/mful.cpp
 cards/ntag.cpp
 ndef/ndef.cpp
-ndef/ndef_parse/ndef_message.cpp
+ndef/ndef_parse/ndef_parser.cpp
 ndef/ndef_parse/ndef_record.cpp
 )
 

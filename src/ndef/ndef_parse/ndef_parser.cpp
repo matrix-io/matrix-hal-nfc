@@ -28,22 +28,22 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
 
-#include "ndef_message.h"
+#include "ndef_parser.h"
 
 namespace matrix_hal {
 
-NDEFMessage::NDEFMessage(void) { _recordCount = 0; }
+NDEFParser::NDEFParser(void) { _recordCount = 0; }
 
 // When vector.clear() is called the capacity of vector does not change and the
 // vector.data() pointer may contain the data prior to clearing this makes sure
 // that an empty message is treated as such by conditionally calling constructor
-NDEFMessage::NDEFMessage(const NDEFContent* ndef_content)
-    : NDEFMessage((ndef_content->content.empty())
-                      ? NDEFMessage()
-                      : NDEFMessage(ndef_content->content.data(),
-                                    ndef_content->content.size())) {}
+NDEFParser::NDEFParser(const NDEFContent* ndef_content)
+    : NDEFParser((ndef_content->content.empty())
+                     ? NDEFParser()
+                     : NDEFParser(ndef_content->content.data(),
+                                  ndef_content->content.size())) {}
 
-NDEFMessage::NDEFMessage(const uint8_t* data, const int numBytes) {
+NDEFParser::NDEFParser(const uint8_t* data, const int numBytes) {
     // DumpHex(data, numBytes, 16);
 
     _recordCount = 0;
@@ -103,16 +103,16 @@ NDEFMessage::NDEFMessage(const uint8_t* data, const int numBytes) {
     }
 }
 
-NDEFMessage::NDEFMessage(const NDEFMessage& rhs) {
+NDEFParser::NDEFParser(const NDEFParser& rhs) {
     _recordCount = rhs._recordCount;
     for (unsigned int i = 0; i < _recordCount; i++) {
         _records[i] = rhs._records[i];
     }
 }
 
-NDEFMessage::~NDEFMessage() {}
+NDEFParser::~NDEFParser() {}
 
-NDEFMessage& NDEFMessage::operator=(const NDEFMessage& rhs) {
+NDEFParser& NDEFParser::operator=(const NDEFParser& rhs) {
     if (this != &rhs) {
         // delete existing records
         for (unsigned int i = 0; i < _recordCount; i++) {
@@ -128,9 +128,9 @@ NDEFMessage& NDEFMessage::operator=(const NDEFMessage& rhs) {
     return *this;
 }
 
-unsigned int NDEFMessage::GetRecordCount() { return _recordCount; }
+unsigned int NDEFParser::GetRecordCount() { return _recordCount; }
 
-int NDEFMessage::GetEncodedSize() {
+int NDEFParser::GetEncodedSize() {
     int size = 0;
     for (unsigned int i = 0; i < _recordCount; i++) {
         size += _records[i].GetEncodedSize();
@@ -139,7 +139,7 @@ int NDEFMessage::GetEncodedSize() {
 }
 
 // TODO change this to return uint8_t*
-void NDEFMessage::Encode(uint8_t* data) {
+void NDEFParser::Encode(uint8_t* data) {
     // assert sizeof(data) >= GetEncodedSize()
     uint8_t* data_ptr = &data[0];
 
@@ -150,7 +150,7 @@ void NDEFMessage::Encode(uint8_t* data) {
     }
 }
 
-bool NDEFMessage::AddRecord(NDEFRecord& record) {
+bool NDEFParser::AddRecord(NDEFRecord& record) {
     if (_recordCount < MAX_NDEF_RECORDS) {
         _records[_recordCount] = record;
         _recordCount++;
@@ -160,8 +160,7 @@ bool NDEFMessage::AddRecord(NDEFRecord& record) {
     }
 }
 
-void NDEFMessage::AddMimeMediaRecord(std::string mimeType,
-                                     std::string payload) {
+void NDEFParser::AddMimeMediaRecord(std::string mimeType, std::string payload) {
     uint8_t payloadBytes[payload.length() + 1];
     // payload.getBytes(payloadBytes, sizeof(payloadBytes));
     std::copy(payload.begin(), payload.end(), payloadBytes);
@@ -169,8 +168,8 @@ void NDEFMessage::AddMimeMediaRecord(std::string mimeType,
     AddMimeMediaRecord(mimeType, payloadBytes, payload.length());
 }
 
-void NDEFMessage::AddMimeMediaRecord(std::string mimeType, uint8_t* payload,
-                                     int payloadLength) {
+void NDEFParser::AddMimeMediaRecord(std::string mimeType, uint8_t* payload,
+                                    int payloadLength) {
     NDEFRecord r = NDEFRecord();
     r.SetTnf(TNF_MIME_MEDIA);
 
@@ -184,9 +183,9 @@ void NDEFMessage::AddMimeMediaRecord(std::string mimeType, uint8_t* payload,
     AddRecord(r);
 }
 
-void NDEFMessage::AddTextRecord(std::string text) { AddTextRecord(text, "en"); }
+void NDEFParser::AddTextRecord(std::string text) { AddTextRecord(text, "en"); }
 
-void NDEFMessage::AddTextRecord(std::string text, std::string encoding) {
+void NDEFParser::AddTextRecord(std::string text, std::string encoding) {
     NDEFRecord r = NDEFRecord();
     r.SetTnf(TNF_WELL_KNOWN);
 
@@ -210,7 +209,7 @@ void NDEFMessage::AddTextRecord(std::string text, std::string encoding) {
     AddRecord(r);
 }
 
-void NDEFMessage::AddUriRecord(std::string uri) {
+void NDEFParser::AddUriRecord(std::string uri) {
     NDEFRecord* r = new NDEFRecord();
     r->SetTnf(TNF_WELL_KNOWN);
 
@@ -234,14 +233,14 @@ void NDEFMessage::AddUriRecord(std::string uri) {
     delete (r);
 }
 
-void NDEFMessage::AddEmptyRecord() {
+void NDEFParser::AddEmptyRecord() {
     NDEFRecord* r = new NDEFRecord();
     r->SetTnf(TNF_EMPTY);
     AddRecord(*r);
     delete (r);
 }
 
-NDEFRecord NDEFMessage::GetRecord(int index) {
+NDEFRecord NDEFParser::GetRecord(int index) {
     if (index > -1 && index < static_cast<int>(_recordCount)) {
         return _records[index];
     } else {
@@ -249,9 +248,9 @@ NDEFRecord NDEFMessage::GetRecord(int index) {
     }
 }
 
-NDEFRecord NDEFMessage::operator[](int index) { return GetRecord(index); }
+NDEFRecord NDEFParser::operator[](int index) { return GetRecord(index); }
 
-std::string NDEFMessage::ToString() {
+std::string NDEFParser::ToString() {
     std::stringstream result;
     result << "NDEF Message " << _recordCount << " record" << std::flush;
     _recordCount == 1 ? result << ", " << std::flush

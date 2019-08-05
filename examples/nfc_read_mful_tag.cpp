@@ -40,7 +40,7 @@ int main() {
         nfc.mful.ReadPages(&nfc_data.pages);
         nfc.Deactivate();
 
-        if (nfc_data.pages.recently_updated) {
+        if (nfc_data.pages.recently_updated && nfc_data.pages.read_complete) {
             cout << endl;
             cout << "String:\n" << nfc_data.pages.ToString() << endl;
             cout << "Hex:\n" << nfc_data.pages.ToHex() << endl;

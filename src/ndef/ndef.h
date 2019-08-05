@@ -7,8 +7,9 @@
 #include <iostream>
 
 #include "../data/ndef_content.h"
-#include "./ndef_parse/ndef_message.h"
+#include "./ndef_parse/ndef_parser.h"
 
+#include "../nfc_status.h"
 #include "../nfc_utility.h"
 
 #include "../nfc_init.h"
@@ -23,7 +24,7 @@ class NDEF {
         : nfc_init(nfc_init), nfc_utility(nfc_utility){};
     int Read(NDEFContent* ndef_content);
     int Write(NDEFContent* ndef_content);
-    int Write(NDEFMessage* ndef_message);
+    int Write(NDEFParser* ndef_parser);
     int Erase();
 };
 
