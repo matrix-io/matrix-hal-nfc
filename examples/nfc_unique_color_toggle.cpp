@@ -132,13 +132,13 @@ int main() {
                     led.blue = 50;
                     led.white = 0;
                 }
-            } else {
-                for (matrix_hal::LedValue &led : everloop_image.leds) {
-                    led.red = 0;
-                    led.green = 0;
-                    led.blue = 0;
-                    led.white = 0;
-                }
+            }
+        } else {
+            for (matrix_hal::LedValue &led : everloop_image.leds) {
+                led.red = 0;
+                led.green = 0;
+                led.blue = 0;
+                led.white = 0;
             }
         }
 
