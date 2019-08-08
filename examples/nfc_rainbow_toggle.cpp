@@ -1,59 +1,76 @@
-#include <chrono>
-#include <cmath>
-#include <iostream>
-#include <thread>
+/////////////////////////
+// INCLUDE STATEMENTS //
+///////////////////////
 
+// For console output
+#include <iostream>
+// For sleep
+#include <chrono>
+#include <thread>
+// For sine
+#include <cmath>
+// For string
+#include <string>
+
+// For using the Everloop
 #include "matrix_hal/everloop.h"
 #include "matrix_hal/everloop_image.h"
 #include "matrix_hal/matrixio_bus.h"
 
+// For using NFC
 #include "matrix_nfc/nfc.h"
 #include "matrix_nfc/nfc_data.h"
 
-using namespace std;
-
-namespace hal = matrix_hal;
-
 int main() {
-    std::string switchUID = "";
+    ////////////////////
+    // INITIAL SETUP //
+    //////////////////
 
-    hal::MatrixIOBus bus;
-
+    // Setting up HAL bus
+    matrix_hal::MatrixIOBus bus;
     if (!bus.Init()) return false;
 
-    hal::EverloopImage everloop_image(bus.MatrixLeds());
-
-    hal::Everloop everloop;
-
+    // Setting up Everloop
+    matrix_hal::EverloopImage everloop_image(bus.MatrixLeds());
+    matrix_hal::Everloop everloop;
     everloop.Setup(&bus);
 
-    hal::NFC nfc;
-    hal::NFCData nfc_data;
+    // Setting up NFC
+    matrix_hal::NFC nfc;
+    matrix_hal::NFCData nfc_data;
 
-    // Get switch UID
+    /////////////////
+    // MAIN CODE //
+    ///////////////
+
     std::cout << "Scan ON/OFF Tag" << std::endl;
+
+    // Loop until a tag is detected and the info from it is read
     while (true) {
         if (nfc_data.info.recently_updated) break;
         nfc.Activate();
         nfc.ReadInfo(&nfc_data.info);
         nfc.Deactivate();
     }
-    switchUID = nfc_data.info.UIDToHex();
+
+    // Get the UID from the tag
+    std::string switchUID = nfc_data.info.UIDToHex();
 
     std::cout << "ON/OFF Tag Scanned!" << std::endl;
 
     float counter = 0;
     const float freq = 0.375;
 
+    std::cout << "Scan the same tag to update rainbow." << std::endl;
+
     do {
-        auto start = chrono::steady_clock::now();
+        // Scan NFC tag and read info into nfc_data.info
         nfc.Activate();
         nfc.ReadInfo(&nfc_data.info);
         nfc.Deactivate();
-        auto end = chrono::steady_clock::now();
-        auto diff = end - start;
-        cout << chrono::duration<double, milli>(diff).count() << " ms" << endl;
 
+        // Update the rainbow on everloop only if a a tag was detected and the
+        // UID of the detected tag matches the initial scanned tag.
         if (nfc_data.info.recently_updated) {
             std::string currUID = nfc_data.info.UIDToHex();
             if (switchUID == currUID) {
@@ -68,15 +85,16 @@ int main() {
                          100) /
                         10;
                     led.blue = (std::sin(freq * counter + 0) * 155 + 100) / 10;
-                    // If MATRIX Creator, increment by 0.51 for proper rainbow
-                    // speed
-                    counter = counter + 0.51;
+                    counter += 0.51;
                 }
             }
         }
 
+        // Update the Everloop
         everloop.Write(&everloop_image);
-        std::this_thread::sleep_for(std::chrono::microseconds(10000));
+
+        // Sleep for a reasonable amount of time
+        std::this_thread::sleep_for(std::chrono::microseconds(5000));
     } while (true);
 
     return 0;
