@@ -244,7 +244,7 @@ void NDEFRecord::SetType(const uint8_t *type, const unsigned int numBytes) {
 }
 
 // assumes the caller sized payload properly
-void NDEFRecord::getPayload(uint8_t *payload) {
+void NDEFRecord::GetPayload(uint8_t *payload) {
     memcpy(payload, _payload, _payloadLength);
 }
 

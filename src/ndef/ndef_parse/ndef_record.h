@@ -65,7 +65,7 @@ class NDEFRecord {
 
     uint8_t GetTnf();
     void GetType(uint8_t *type);
-    void getPayload(uint8_t *payload);
+    void GetPayload(uint8_t *payload);
     void GetId(uint8_t *id);
 
     // convenience methods
