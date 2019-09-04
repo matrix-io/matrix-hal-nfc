@@ -232,10 +232,10 @@ std::string NDEFRecord::GetType() {
 
 // Get payload string
 std::string NDEFRecord::GetPayload() {
-    char payload[_payloadLength + 1];
-    memcpy(payload, _payload, _payloadLength);
-    payload[_payloadLength] = '\0';  // null terminate
-    return std::string(payload);
+    // char payload[_payloadLength + 1];
+    // memcpy(payload, _payload, _payloadLength);
+    // payload[_payloadLength] = '\0';  // null terminate
+    return BytesToString(_payload, _payloadLength);
 }
 
 // this assumes the caller created type correctly
