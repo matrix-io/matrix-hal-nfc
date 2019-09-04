@@ -230,6 +230,14 @@ std::string NDEFRecord::GetType() {
     return std::string(type);
 }
 
+// Get payload string
+std::string NDEFRecord::GetPayload() {
+    char payload[_payloadLength + 1];
+    memcpy(payload, _payload, _payloadLength);
+    payload[_payloadLength] = '\0';  // null terminate
+    return std::string(payload);
+}
+
 // this assumes the caller created type correctly
 void NDEFRecord::GetType(uint8_t *type) { memcpy(type, _type, _typeLength); }
 
