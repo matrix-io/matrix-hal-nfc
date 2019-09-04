@@ -71,6 +71,7 @@ class NDEFRecord {
     // convenience methods
     std::string GetType();
     std::string GetId();
+    std::string GetPayload();
 
     void SetTnf(uint8_t tnf);
     void SetType(const uint8_t *type, const unsigned int numBytes);

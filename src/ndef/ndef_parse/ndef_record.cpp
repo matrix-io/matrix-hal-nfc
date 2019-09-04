@@ -342,4 +342,11 @@ std::string NDEFRecord::ToString() {
     return result.str();
 }
 
+// Get payload string
+std::string NDEFRecord::GetPayload() {
+    std::stringstream result;
+    result << BytesToString(_payload, _payloadLength);
+    return result.str();
+}
+
 }  // namespace matrix_hal
