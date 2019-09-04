@@ -344,11 +344,8 @@ std::string NDEFRecord::ToString() {
 
 // Get payload string
 std::string NDEFRecord::GetPayload() {
-    // char payload[_payloadLength + 1];
-    // memcpy(payload, _payload, _payloadLength);
-    // payload[_payloadLength] = '\0';  // null terminate
     std::stringstream result;
-    result << BytesToString(_payload, _payloadLength) << std::endl;
+    result << BytesToString(_payload, _payloadLength);
     return result.str();
 }
 
