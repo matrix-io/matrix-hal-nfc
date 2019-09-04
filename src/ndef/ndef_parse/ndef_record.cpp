@@ -235,7 +235,9 @@ std::string NDEFRecord::GetPayload() {
     // char payload[_payloadLength + 1];
     // memcpy(payload, _payload, _payloadLength);
     // payload[_payloadLength] = '\0';  // null terminate
-    return BytesToString(_payload, _payloadLength);
+    std::stringstream result;
+    result << BytesToString(_payload, _payloadLength) << std::endl;
+    return result.str();
 }
 
 // this assumes the caller created type correctly
